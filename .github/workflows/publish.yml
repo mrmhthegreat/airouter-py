@@ -1,0 +1,39 @@
+name: publish
+
+# Publishes airouter-py to PyPI automatically when a `v*` tag is pushed.
+#
+# Prerequisites (one-time, on the PyPI web UI):
+#   1. Do the FIRST upload manually with `twine upload dist/*` so the project
+#      is created on PyPI.
+#   2. Go to https://pypi.org/manage/project/airouter-py/settings/publishing/
+#      and add this GitHub repo as a "Trusted Publisher" (GitHub Actions tab).
+#      No API token needed — publishing uses OIDC.
+#   3. To publish a new version: bump `version` in pyproject.toml, commit,
+#      `git tag v0.1.1 && git push origin v0.1.1`.
+#
+# For TestPyPI, do the same at
+#   https://test.pypi.org/manage/project/airouter-py/settings/publishing/
+# and uncomment the `repository-url` line below.
+
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    environment: pypi          # create this environment in your repo settings
+    permissions:
+      id-token: write          # required for trusted publishing (OIDC)
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install --upgrade build twine
+      - run: python -m build
+      - run: python -m twine check dist/*
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        # with:
+        #   repository-url: https://test.pypi.org/legacy/

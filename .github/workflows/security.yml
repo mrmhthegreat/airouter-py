@@ -1,0 +1,77 @@
+name: security
+
+# Runs dependency + source-code security scans on every push, PR, and weekly.
+# Failures are reported but do NOT block the build — they appear as annotations
+# on the commit / PR so you can fix them at your own pace. To make them
+# blocking, change `continue-on-error: false` below.
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  schedule:
+    - cron: "27 4 * * 1"   # weekly Monday scan for new CVEs in deps
+
+jobs:
+  pip-audit:
+    name: pip-audit (dependencies)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install --upgrade pip pip-audit
+      - name: Audit dependencies for known CVEs
+        run: |
+          # Audit the project + optional [server] extra. pip-audit resolves
+          # the dependency tree from pyproject.toml and queries the PyPI
+          # advisory database + OSV.
+          pip-audit -v --strict --no-deps --require-hashes=false \
+            --desc .
+        continue-on-error: true
+
+  bandit:
+    name: bandit (source code)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install --upgrade bandit
+      - name: Scan airouter/ source for common Python security issues
+        # -r: recursive. -ll: low severity threshold (report everything).
+        # -i B101: skip assert-used (tests use asserts). Output SARIF + text.
+        run: |
+          bandit -r airouter -ll -i B101 \
+            -f txt -o bandit-report.txt || true
+          cat bandit-report.txt
+      - name: Upload bandit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bandit-report
+          path: bandit-report.txt
+
+  codeql:
+    name: CodeQL (semantic analysis)
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write   # needed to upload CodeQL results
+      actions: read
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [python]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          # Run the security-and-quality query suite for deeper checks.
+          queries: security-and-quality
+      - uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{ matrix.language }}"

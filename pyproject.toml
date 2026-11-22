@@ -1,0 +1,51 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "airouter-py"
+version = "0.1.0"
+description = "Route prompts across free-tier AI providers (Groq, Gemini, OpenRouter, Z.AI, SambaNova, Ollama, any OpenAI-compatible URL) with automatic failover. Supports text chat, TTS and STT. Python port of github.com/mrmhthegreat/airouter."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.10"
+authors = [{ name = "airouter-py contributors" }]
+keywords = ["llm", "openai", "groq", "gemini", "failover", "router", "tts", "stt", "free-tier", "openai-compatible"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Internet :: WWW/HTTP",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "requests>=2.28",
+    "cryptography>=40",
+]
+
+[project.optional-dependencies]
+server = ["fastapi>=0.100", "uvicorn>=0.23", "starlette>=0.27", "python-multipart>=0.0.6"]
+dev = ["pytest>=7", "build>=1", "twine>=4"]
+
+[project.urls]
+Homepage = "https://github.com/mrmhthegreat/airouter-py"
+Source = "https://github.com/mrmhthegreat/airouter-py"
+Documentation = "https://github.com/mrmhthegreat/airouter-py/tree/main/docs"
+"Bug Tracker" = "https://github.com/mrmhthegreat/airouter-py/issues"
+"Original (Go)" = "https://github.com/mrmhthegreat/airouter"
+
+[project.scripts]
+airouter = "airouter.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["airouter*"]
+
+[tool.setuptools.package-data]
+airouter = ["web/index.html"]

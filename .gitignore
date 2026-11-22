@@ -1,0 +1,110 @@
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Distribution / packaging — these are build outputs, never commit them.
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments — every contributor creates their own.
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+.python-version
+
+# pip / setuptools / pytest caches.
+.cache/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.nox/
+.coverage
+.coverage.*
+htmlcov/
+.hypothesis/
+coverage.xml
+*.cover
+*.py,cover
+
+# Jupyter / IPython notebooks checkpoints.
+.ipynb_checkpoints/
+
+# ---- Project-specific runtime artifacts ----
+# SQLite databases and key files created by `airouter` during local use.
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+*.db.key
+airouter.db*
+ai.db*
+data/
+
+# Test artifacts.
+/tmp/
+
+# ---- Publishing artifacts ----
+# Build artifacts never belong in git — `publish.sh` regenerates them.
+*.whl
+*.tar.gz
+SHA256SUMS
+SHA256SUMS.txt
+
+# ---- Editor / IDE ----
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+*.sublime-project
+*.sublime-workspace
+
+# ---- OS ----
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# ---- Secrets / credentials ----
+# NEVER commit these. If you do by accident, rotate the secret immediately
+# and use `git filter-repo` to remove it from history.
+.pypirc
+.env
+.env.*
+*.pem
+*.key
+credentials.json
+secrets.yml
+secrets.yaml
+
+# ---- Logs ----
+*.log
+logs/
+*.out

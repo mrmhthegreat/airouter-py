@@ -1,0 +1,16 @@
+# CODEOWNERS — every file in the repo has a clear owner.
+#
+# Format: <pattern> <owner1> <owner2> ...
+# GitHub requests review from these people on any PR touching the pattern.
+# Replace @mrmhthegreat with your GitHub handle.
+
+# Default owner for everything not matched below.
+*                           @mrmhthegreat
+
+# Security-sensitive areas — require explicit review.
+/airouter/store.py          @mrmhthegreat
+/airouter/server.py         @mrmhthegreat
+/airouter/router_tenantprov.py  @mrmhthegreat
+/SECURITY.md                @mrmhthegreat
+/.github/workflows/         @mrmhthegreat
+/publish.sh                 @mrmhthegreat

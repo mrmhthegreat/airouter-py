@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>airouter</title>
+  <style>
+    :root {
+      --bg: #0b1020; --panel: #141a2e; --panel-2: #1c2440; --fg: #e7ecf3;
+      --muted: #8b93b4; --accent: #6ee7ff; --accent-2: #a78bfa; --ok: #34d399;
+      --warn: #fbbf24; --err: #f87171; --line: #232c4a;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font: 14px/1.5 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--fg); }
+    header { padding: 16px 24px; border-bottom: 1px solid var(--line); display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+    header h1 { margin: 0; font-size: 18px; font-weight: 600; letter-spacing: 0.02em; }
+    header h1 span { color: var(--accent); }
+    header .who { color: var(--muted); margin-left: auto; }
+    header input { background: var(--panel); border: 1px solid var(--line); color: var(--fg); padding: 8px 10px; border-radius: 6px; font: inherit; min-width: 260px; }
+    header button { background: var(--accent); color: #04212a; border: none; padding: 8px 14px; border-radius: 6px; font-weight: 600; cursor: pointer; }
+    header button:hover { background: #8af0ff; }
+    main { display: grid; grid-template-columns: 1fr; gap: 16px; padding: 16px 24px; }
+    @media (min-width: 980px) { main { grid-template-columns: 2fr 1fr; } }
+    .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; }
+    .panel h2 { margin: 0 0 12px; font-size: 14px; font-weight: 600; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; }
+    .tabs { display: flex; gap: 4px; margin-bottom: 12px; flex-wrap: wrap; }
+    .tabs button { background: var(--panel-2); color: var(--muted); border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; font: inherit; }
+    .tabs button.active { background: var(--accent); color: #04212a; font-weight: 600; }
+    textarea, input[type=text], input[type=password] { width: 100%; background: var(--panel-2); border: 1px solid var(--line); color: var(--fg); padding: 10px; border-radius: 6px; font: inherit; resize: vertical; }
+    textarea { min-height: 120px; }
+    .row { display: flex; gap: 8px; align-items: center; margin: 8px 0; flex-wrap: wrap; }
+    .row label { color: var(--muted); min-width: 100px; }
+    button.primary { background: var(--accent); color: #04212a; border: none; padding: 10px 18px; border-radius: 6px; font: inherit; font-weight: 600; cursor: pointer; }
+    button.primary:hover { background: #8af0ff; }
+    button.ghost { background: transparent; color: var(--muted); border: 1px solid var(--line); padding: 8px 14px; border-radius: 6px; cursor: pointer; font: inherit; }
+    .out { background: var(--panel-2); border: 1px solid var(--line); border-radius: 6px; padding: 12px; margin-top: 12px; white-space: pre-wrap; word-break: break-word; min-height: 80px; font-family: ui-monospace, SFMono-Regular, "Cascadia Mono", Menlo, Consolas, monospace; font-size: 12.5px; }
+    .meta { color: var(--muted); font-size: 12px; margin-top: 8px; }
+    .meta b { color: var(--accent); font-weight: 500; }
+    table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+    th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th { color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; font-size: 11px; }
+    td .pill { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; }
+    .pill.ok { background: rgba(52,211,153,0.15); color: var(--ok); }
+    .pill.warn { background: rgba(251,191,36,0.15); color: var(--warn); }
+    .pill.err { background: rgba(248,113,113,0.15); color: var(--err); }
+    .pill.muted { background: rgba(139,147,180,0.15); color: var(--muted); }
+    code { font-family: ui-monospace, SFMono-Regular, "Cascadia Mono", Menlo, Consolas, monospace; background: var(--panel-2); padding: 2px 6px; border-radius: 4px; }
+    pre { background: var(--panel-2); border: 1px solid var(--line); border-radius: 6px; padding: 12px; overflow-x: auto; font-size: 12.5px; }
+    .small { font-size: 12px; color: var(--muted); }
+    a { color: var(--accent); }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+<header>
+  <h1>air<span>outer</span></h1>
+  <input id="key" type="password" placeholder="paste a tenant key (air_...) or the admin token" autocomplete="off">
+  <button id="signin">Sign in</button>
+  <span class="who" id="who"></span>
+</header>
+
+<main>
+  <div class="panel" id="chat-panel">
+    <div class="tabs">
+      <button class="active" data-tab="chat">Chat</button>
+      <button data-tab="usage">Usage</button>
+      <button data-tab="connect">Connect your app</button>
+      <button data-tab="admin">Admin</button>
+    </div>
+
+    <div id="tab-chat">
+      <textarea id="prompt" placeholder="Ask anything — airouter will pick the best available provider and fail over automatically."></textarea>
+      <div class="row">
+        <label>System</label>
+        <input id="system" type="text" placeholder="optional system prompt">
+      </div>
+      <div class="row">
+        <label>Model</label>
+        <input id="model" type="text" placeholder="auto (default)" value="auto">
+        <label class="small"><input type="checkbox" id="json"> JSON mode</label>
+        <button class="primary" id="send">Send</button>
+      </div>
+      <div class="out" id="answer">(answer appears here)</div>
+      <div class="meta" id="chat-meta"></div>
+    </div>
+
+    <div id="tab-usage" class="hidden">
+      <button class="ghost" id="refresh-usage">Refresh</button>
+      <div id="usage-table"></div>
+    </div>
+
+    <div id="tab-connect" class="hidden">
+      <p class="small">Point any OpenAI SDK at <code>http://<span id="host"></span>/v1</code> with your airouter key and <code>model="auto"</code>:</p>
+      <pre id="py"></pre>
+      <pre id="curl"></pre>
+    </div>
+
+    <div id="tab-admin" class="hidden">
+      <p class="small">Admin actions need the admin token (set via <code>AIROUTER_ADMIN_TOKEN</code>).</p>
+      <div class="row">
+        <button class="ghost" id="btn-bootstrap">Bootstrap free-pool</button>
+        <button class="ghost" id="btn-list-providers">List providers</button>
+        <button class="ghost" id="btn-list-tenants">List tenants</button>
+      </div>
+      <div class="out" id="admin-out">(admin output)</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Providers</h2>
+    <div id="providers"><span class="small">Sign in to see live status.</span></div>
+  </div>
+</main>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const api = async (path, opts={}) => {
+  const key = $("key").value.trim();
+  const r = await fetch(path, {
+    ...opts,
+    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + key, ...(opts.headers||{}) },
+  });
+  const txt = await r.text();
+  let body; try { body = JSON.parse(txt); } catch { body = txt; }
+  if (!r.ok) throw new Error((body && body.error) || ("HTTP " + r.status));
+  return body;
+};
+
+const signIn = async () => {
+  try {
+    const me = await api("/v1/whoami");
+    $("who").textContent = (me.role === "admin" ? "admin" : "tenant") + ": " + me.tenant.id;
+    refreshProviders();
+  } catch (e) { $("who").textContent = "error: " + e.message; }
+};
+
+const refreshProviders = async () => {
+  try {
+    const u = await api("/v1/usage");
+    const rows = (u.providers||[]).map(p => {
+      const stateCls = p.state === "ok" ? "ok" : (p.state.includes("paused") || p.state.includes("limit") ? "err" : "warn");
+      return `<tr><td><b>${p.name||p.model}</b><br><span class="small">${p.model}</span></td>
+        <td><span class="pill ${stateCls}">${p.state}</span></td>
+        <td>${p.used_today||0}/${p.rpd||"-"}</td>
+        <td>${(p.remaining_today!=null)?p.remaining_today:"-"}</td>
+        <td class="small">${p.reset_tz}</td></tr>`;
+    }).join("");
+    $("providers").innerHTML = `<table><thead><tr><th>Provider</th><th>State</th><th>Used/RPD</th><th>Left</th><th>TZ</th></tr></thead><tbody>${rows}</tbody></table>`;
+  } catch (e) { $("providers").innerHTML = '<span class="small">' + e.message + "</span>"; }
+};
+
+const send = async () => {
+  $("answer").textContent = "thinking...";
+  $("chat-meta").textContent = "";
+  const body = {
+    messages: [{role:"user", content: $("prompt").value}],
+    system: $("system").value || undefined,
+    model: $("model").value || "auto",
+    response_format: $("json").checked ? {type:"json_object"} : undefined,
+  };
+  try {
+    const t0 = performance.now();
+    const r = await api("/v1/chat/completions", {method:"POST", body: JSON.stringify(body)});
+    const dt = ((performance.now() - t0)/1000).toFixed(2);
+    $("answer").textContent = r.choices[0].message.content;
+    const ar = r.airouter || {};
+    $("chat-meta").innerHTML = `<b>${ar.provider}</b> / ${r.model}, ${r.usage.total_tokens} tokens, ${dt}s, ${ar.latency_ms||0}ms` +
+      (ar.attempts && ar.attempts.length ? ` · failover: ${ar.attempts.map(a=>a.provider).join(", ")}` : "");
+    refreshProviders();
+  } catch (e) { $("answer").textContent = "error: " + e.message; }
+};
+
+// Tabs
+document.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click", () => {
+  document.querySelectorAll(".tabs button").forEach(x => x.classList.remove("active"));
+  b.classList.add("active");
+  ["chat","usage","connect","admin"].forEach(t => $("tab-"+t).classList.toggle("hidden", t !== b.dataset.tab));
+  if (b.dataset.tab === "usage") refreshUsage();
+  if (b.dataset.tab === "connect") fillConnect();
+}));
+
+const refreshUsage = async () => {
+  try {
+    const u = await api("/v1/usage");
+    const rows = (u.usage.providers||[]).map(p => `<tr><td>${p.provider}</td><td>${p.model}</td><td>${p.day}</td><td>${p.tenant_requests}</td><td>${p.tenant_tokens}</td><td>${p.all_tenants_requests}</td><td>${p.limit_per_day||"-"}</td></tr>`).join("");
+    $("usage-table").innerHTML = `<p class="small">tenant <b>${u.usage.tenant}</b>: ${u.usage.requests_today} requests, ${u.usage.tokens_today} tokens (limit: ${u.usage.tenant_daily_limit||"∞"})</p>
+      <table><thead><tr><th>Provider</th><th>Model</th><th>Day</th><th>Yours</th><th>Tokens</th><th>All</th><th>Limit/day</th></tr></thead><tbody>${rows}</tbody></table>`;
+  } catch (e) { $("usage-table").innerHTML = '<span class="small">' + e.message + "</span>"; }
+};
+
+const fillConnect = () => {
+  const host = location.host;
+  $("host").textContent = host;
+  const key = $("key").value.trim() || "air_...";
+  $("py").textContent =
+    `from openai import OpenAI\n` +
+    `client = OpenAI(base_url="http://${host}/v1", api_key="${key}")\n` +
+    `print(client.chat.completions.create(\n` +
+    `    model="auto",\n` +
+    `    messages=[{"role":"user","content":"Hello"}]).choices[0].message.content)`;
+  $("curl").textContent =
+    `curl -s http://${host}/v1/chat/completions \\\n` +
+    `  -H "Authorization: Bearer ${key}" \\\n` +
+    `  -H "Content-Type: application/json" \\\n` +
+    `  -d '{"model":"auto","messages":[{"role":"user","content":"Hello"}]}'`;
+};
+
+// Admin
+const adminCall = async (path, method="POST", body) => {
+  try {
+    const r = await api(path, {method, body: body ? JSON.stringify(body) : undefined});
+    $("admin-out").textContent = JSON.stringify(r, null, 2);
+  } catch (e) { $("admin-out").textContent = "error: " + e.message; }
+};
+$("btn-bootstrap").onclick = () => adminCall("/v1/bootstrap?category=text&store_keys=1");
+$("btn-list-providers").onclick = () => adminCall("/v1/providers", "GET");
+$("btn-list-tenants").onclick = () => adminCall("/v1/tenants", "GET");
+
+$("signin").onclick = signIn;
+$("send").onclick = send;
+$("refresh-usage").onclick = refreshUsage;
+$("prompt").addEventListener("keydown", (e) => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) send(); });
+</script>
+</body>
+</html>
