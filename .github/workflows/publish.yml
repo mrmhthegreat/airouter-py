@@ -1,5 +1,21 @@
 name: publish
 
+# Publishes airouter-py to PyPI automatically when a `v*` tag is pushed.
+#
+# Prerequisites (one-time, on the PyPI web UI):
+#   1. Do the FIRST upload manually with `./publish.sh --prod` (or `twine upload
+#      dist/*`) so the project is created on PyPI.
+#   2. Go to https://pypi.org/manage/project/airouter-py/settings/publishing/
+#      and add this GitHub repo as a "Trusted Publisher" (GitHub Actions tab).
+#      No API token needed — publishing uses OIDC.
+#   3. To publish a new version: bump `version` in pyproject.toml, commit,
+#      `git tag v0.1.1 && git push origin v0.1.1`.
+#
+# This workflow is SAFE to re-run on the same tag: the pre-check step queries
+# PyPI for the version being built and SKIPS the upload if it already exists
+# (instead of failing with "400 File already exists"). The pypa action's
+# `skip-existing: true` is a belt-and-suspenders fallback.
+
 on:
   push:
     tags: ["v*"]
@@ -7,14 +23,15 @@ on:
 jobs:
   build-and-publish:
     runs-on: ubuntu-latest
-    environment: pypi
+    environment: pypi          # create this environment in your repo settings
     permissions:
-      id-token: write
+      id-token: write          # required for trusted publishing (OIDC)
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+
       - run: pip install --upgrade build twine
 
       - name: Read package name + version
@@ -29,12 +46,14 @@ jobs:
               s = pathlib.Path("pyproject.toml").read_text()
               name = re.search(r'^name\s*=\s*"([^"]+)"', s, re.M).group(1)
               version = re.search(r'^version\s*=\s*"([^"]+)"', s, re.M).group(1)
+          # PEP 503 normalised name: lowercase, runs of [-_.] -> single dash.
           norm = re.sub(r"[-_.]+", "-", name.lower())
           print(f"{norm} {version}")
           PY
           read -r NORM_NAME VERSION < /tmp/meta.txt
           echo "norm_name=$NORM_NAME" >> "$GITHUB_OUTPUT"
           echo "version=$VERSION"    >> "$GITHUB_OUTPUT"
+          echo "Will publish $NORM_NAME $VERSION"
 
       - name: Check if version is already on PyPI
         id: exists
@@ -42,6 +61,7 @@ jobs:
           set +e
           CODE=$(curl -s -o /dev/null -w "%{http_code}" \
             "https://pypi.org/pypi/${{ steps.meta.outputs.norm_name }}/${{ steps.meta.outputs.version }}/json")
+          echo "http_code=$CODE" >> "$GITHUB_OUTPUT"
           if [ "$CODE" = "200" ]; then
             echo "::notice::Version ${{ steps.meta.outputs.version }} is already on PyPI — skipping upload."
             echo "skip=true" >> "$GITHUB_OUTPUT"
@@ -57,20 +77,24 @@ jobs:
         if: steps.exists.outputs.skip != 'true'
         run: python -m twine check dist/*.whl dist/*.tar.gz
 
-      - name: Generate SHA256SUMS
+      - name: Generate SHA256SUMS (for the artifact archive, not for upload)
         if: steps.exists.outputs.skip != 'true'
-        run: ( cd dist && sha256sum *.whl *.tar.gz > SHA256SUMS )
+        run: sha256sum dist/*.whl dist/*.tar.gz > SHA256SUMS.txt
 
       - name: Publish to PyPI
         if: steps.exists.outputs.skip != 'true'
         uses: pypa/gh-action-pypi-publish@release/v1
+        # skip-existing is a fallback safety net — the pre-check above should
+        # already prevent re-uploads, but this catches any race condition.
         with:
           skip-existing: true
-          attestations: true
+          attestations: true   # generate sigstore attestations (PyPI displays them)
 
       - name: Upload build artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: dist
-          path: dist/
+          path: |
+            dist/
+            SHA256SUMS.txt
