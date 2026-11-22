@@ -18,11 +18,6 @@ with AES-256-GCM-encrypted provider keys, the curated free-pool catalog,
 tenants with hashed API keys, JSON mode, the OpenAI-compatible HTTP API,
 the web UI, the same CLI subcommands.
 
-> **Package name:** published on PyPI as **`airouter-py`** (the bare name
-> `airouter` is already taken on PyPI by an unrelated package). The CLI
-> script is still `airouter` (the script name and the package name are
-> independent — see `[project.scripts]` in `pyproject.toml`). See
-> [docs/PUBLISHING.md](docs/PUBLISHING.md) for how to publish new versions.
 
 `airouter` is for: hobby projects, prototypes, internal tools, hackathons,
 and anyone who wants free LLM access without managing API keys in every
