@@ -18,7 +18,6 @@ with AES-256-GCM-encrypted provider keys, the curated free-pool catalog,
 tenants with hashed API keys, JSON mode, the OpenAI-compatible HTTP API,
 the web UI, the same CLI subcommands.
 
-
 `airouter` is for: hobby projects, prototypes, internal tools, hackathons,
 and anyone who wants free LLM access without managing API keys in every
 script. Configure it once with the providers you have free keys for, then
