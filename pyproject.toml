@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "airouter-py"
-version = "0.1.0"
+version = "0.1.1"
 description = "Route prompts across free-tier AI providers (Groq, Gemini, OpenRouter, Z.AI, SambaNova, Ollama, any OpenAI-compatible URL) with automatic failover. Supports text chat, TTS and STT. Python port of github.com/mrmhthegreat/airouter."
 readme = "README.md"
 license = "MIT"
