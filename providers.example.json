@@ -1,0 +1,57 @@
+{
+  "_comment": "Example providers file for `airouter provider import`. Copy to providers.json, fill in your keys, and run: airouter provider import providers.json  (or: airouter provider import -tenant acme providers.json to import as private to one tenant). The api_key field is stored AES-256-GCM encrypted in the DB; the file itself should stay on your machine (it is in .gitignore).",
+  "providers": [
+    {
+      "preset": "groq",
+      "model": "openai/gpt-oss-120b",
+      "api_key": "gsk_REPLACE_WITH_YOUR_KEY",
+      "rpm": 30,
+      "rpd": 1000,
+      "tpm": 8000,
+      "priority": 10,
+      "workers": 3
+    },
+    {
+      "preset": "groq",
+      "model": "openai/gpt-oss-20b",
+      "api_key": "gsk_REPLACE_WITH_YOUR_KEY",
+      "priority": 15
+    },
+    {
+      "preset": "gemini",
+      "model": "gemini-3.5-flash-lite",
+      "api_key": "AIzaREPLACE_WITH_YOUR_KEY",
+      "priority": 25
+    },
+    {
+      "preset": "zai",
+      "model": "glm-4.7-flash",
+      "api_key": "REPLACE_WITH_YOUR_ZAI_KEY",
+      "priority": 55,
+      "workers": 1
+    },
+    {
+      "preset": "ollama",
+      "model": "gemma3:4b",
+      "priority": 95,
+      "workers": 1
+    },
+    {
+      "preset": "groq",
+      "model": "canopylabs/orpheus-v1-english",
+      "api_key": "gsk_REPLACE_WITH_YOUR_KEY",
+      "category": "tts",
+      "rpm": 10,
+      "rpd": 100
+    },
+    {
+      "preset": "groq",
+      "model": "whisper-large-v3-turbo",
+      "api_key": "gsk_REPLACE_WITH_YOUR_KEY",
+      "category": "stt",
+      "rpm": 20,
+      "ash": 7200,
+      "asd": 28800
+    }
+  ]
+}

@@ -98,6 +98,7 @@ Thumbs.db
 .pypirc
 .env
 .env.*
+!.env.example
 *.pem
 *.key
 credentials.json
