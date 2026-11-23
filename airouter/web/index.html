@@ -1,225 +1,593 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>airouter</title>
-  <style>
-    :root {
-      --bg: #0b1020; --panel: #141a2e; --panel-2: #1c2440; --fg: #e7ecf3;
-      --muted: #8b93b4; --accent: #6ee7ff; --accent-2: #a78bfa; --ok: #34d399;
-      --warn: #fbbf24; --err: #f87171; --line: #232c4a;
-    }
-    * { box-sizing: border-box; }
-    body { margin: 0; font: 14px/1.5 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--fg); }
-    header { padding: 16px 24px; border-bottom: 1px solid var(--line); display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
-    header h1 { margin: 0; font-size: 18px; font-weight: 600; letter-spacing: 0.02em; }
-    header h1 span { color: var(--accent); }
-    header .who { color: var(--muted); margin-left: auto; }
-    header input { background: var(--panel); border: 1px solid var(--line); color: var(--fg); padding: 8px 10px; border-radius: 6px; font: inherit; min-width: 260px; }
-    header button { background: var(--accent); color: #04212a; border: none; padding: 8px 14px; border-radius: 6px; font-weight: 600; cursor: pointer; }
-    header button:hover { background: #8af0ff; }
-    main { display: grid; grid-template-columns: 1fr; gap: 16px; padding: 16px 24px; }
-    @media (min-width: 980px) { main { grid-template-columns: 2fr 1fr; } }
-    .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; }
-    .panel h2 { margin: 0 0 12px; font-size: 14px; font-weight: 600; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; }
-    .tabs { display: flex; gap: 4px; margin-bottom: 12px; flex-wrap: wrap; }
-    .tabs button { background: var(--panel-2); color: var(--muted); border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; font: inherit; }
-    .tabs button.active { background: var(--accent); color: #04212a; font-weight: 600; }
-    textarea, input[type=text], input[type=password] { width: 100%; background: var(--panel-2); border: 1px solid var(--line); color: var(--fg); padding: 10px; border-radius: 6px; font: inherit; resize: vertical; }
-    textarea { min-height: 120px; }
-    .row { display: flex; gap: 8px; align-items: center; margin: 8px 0; flex-wrap: wrap; }
-    .row label { color: var(--muted); min-width: 100px; }
-    button.primary { background: var(--accent); color: #04212a; border: none; padding: 10px 18px; border-radius: 6px; font: inherit; font-weight: 600; cursor: pointer; }
-    button.primary:hover { background: #8af0ff; }
-    button.ghost { background: transparent; color: var(--muted); border: 1px solid var(--line); padding: 8px 14px; border-radius: 6px; cursor: pointer; font: inherit; }
-    .out { background: var(--panel-2); border: 1px solid var(--line); border-radius: 6px; padding: 12px; margin-top: 12px; white-space: pre-wrap; word-break: break-word; min-height: 80px; font-family: ui-monospace, SFMono-Regular, "Cascadia Mono", Menlo, Consolas, monospace; font-size: 12.5px; }
-    .meta { color: var(--muted); font-size: 12px; margin-top: 8px; }
-    .meta b { color: var(--accent); font-weight: 500; }
-    table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
-    th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
-    th { color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; font-size: 11px; }
-    td .pill { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; }
-    .pill.ok { background: rgba(52,211,153,0.15); color: var(--ok); }
-    .pill.warn { background: rgba(251,191,36,0.15); color: var(--warn); }
-    .pill.err { background: rgba(248,113,113,0.15); color: var(--err); }
-    .pill.muted { background: rgba(139,147,180,0.15); color: var(--muted); }
-    code { font-family: ui-monospace, SFMono-Regular, "Cascadia Mono", Menlo, Consolas, monospace; background: var(--panel-2); padding: 2px 6px; border-radius: 4px; }
-    pre { background: var(--panel-2); border: 1px solid var(--line); border-radius: 6px; padding: 12px; overflow-x: auto; font-size: 12.5px; }
-    .small { font-size: 12px; color: var(--muted); }
-    a { color: var(--accent); }
-    .hidden { display: none; }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>airouter</title>
+<style>
+:root{--bg:#f4f6f9;--panel:#fff;--panel2:#f8fafc;--ink:#0f1b2a;--muted:#617083;--line:#e2e8f0;--accent:#0d9488;--accent2:#2563eb;--accent-ink:#fff;--soft:rgba(13,148,136,.1);--ok:#16a34a;--warn:#d97706;--bad:#dc2626;--off:#94a3b8;--code:#eef2f6;--focus:#f59e0b;--shadow:0 1px 2px rgba(15,27,42,.05),0 4px 16px rgba(15,27,42,.05);--r:12px;
+--font:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0a1018;--panel:#121b26;--panel2:#0f1721;--ink:#e6edf5;--muted:#8fa0b2;--line:#233140;--accent:#2dd4bf;--accent2:#60a5fa;--accent-ink:#04201d;--soft:rgba(45,212,191,.12);--ok:#4ade80;--warn:#fbbf24;--bad:#f87171;--off:#64748b;--code:#0d151e;--shadow:0 1px 2px rgba(0,0,0,.4),0 6px 24px rgba(0,0,0,.3)}}
+:root[data-theme="dark"]{--bg:#0a1018;--panel:#121b26;--panel2:#0f1721;--ink:#e6edf5;--muted:#8fa0b2;--line:#233140;--accent:#2dd4bf;--accent2:#60a5fa;--accent-ink:#04201d;--soft:rgba(45,212,191,.12);--ok:#4ade80;--warn:#fbbf24;--bad:#f87171;--off:#64748b;--code:#0d151e;--shadow:0 1px 2px rgba(0,0,0,.4),0 6px 24px rgba(0,0,0,.3)}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:14.5px/1.55 var(--font);-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.shell{display:grid;grid-template-columns:232px 1fr;min-height:100vh}
+nav{background:var(--panel);border-right:1px solid var(--line);padding:20px 14px;display:flex;flex-direction:column;gap:4px;position:sticky;top:0;height:100vh}
+.logo{display:flex;align-items:center;gap:10px;margin:0 6px 18px;font:700 19px var(--mono);letter-spacing:-.03em}
+.logo i{font-style:normal;color:var(--accent)}
+.mark{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:grid;place-items:center;color:#fff;box-shadow:0 4px 12px rgba(37,99,235,.3)}
+.mark svg{width:17px;height:17px}
+nav>button[data-tab]{display:flex;align-items:center;gap:10px;text-align:left;background:none;border:0;padding:9px 12px;border-radius:9px;cursor:pointer;color:var(--muted);font-weight:500;transition:background .15s,color .15s}
+nav>button svg{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+nav>button:hover{background:var(--panel2);color:var(--ink)}
+nav>button[aria-current="page"]{background:var(--soft);color:var(--accent);font-weight:600}
+nav .who{margin-top:auto;font-size:13px;color:var(--muted);padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--panel2);word-break:break-word}
+nav .who .row{margin-top:8px;gap:6px}
+main{padding:28px clamp(16px,4vw,44px);max-width:1180px;width:100%}
+section>.pagehead{margin-bottom:18px}
+h2{margin:0 0 4px;font-size:22px;letter-spacing:-.02em}
+.sub{margin:0 0 18px;color:var(--muted);max-width:68ch}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:18px;box-shadow:var(--shadow)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.btn{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:0;padding:9px 16px;border-radius:9px;cursor:pointer;font-weight:600;transition:transform .12s,box-shadow .15s,filter .15s;box-shadow:0 2px 8px rgba(37,99,235,.22)}
+.btn:hover{filter:brightness(1.07);box-shadow:0 4px 14px rgba(37,99,235,.3)}
+.btn:active{transform:translateY(1px) scale(.98)}
+.btn.ghost{background:var(--panel);color:var(--ink);border:1px solid var(--line);font-weight:500;box-shadow:none}
+.btn.ghost:hover{background:var(--panel2);border-color:var(--muted);filter:none}
+.btn.small{padding:4px 10px;font-size:13px;border-radius:7px}
+.btn:disabled{opacity:.5;cursor:default;transform:none}
+input[type=text],input[type=password],select,textarea{background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:9px 11px;width:100%;transition:border-color .15s,box-shadow .15s}
+input:focus,select:focus,textarea:focus{outline:0;border-color:var(--accent);box-shadow:0 0 0 3px var(--soft)}
+textarea{resize:vertical}
+label{display:block;font-size:12.5px;font-weight:500;color:var(--muted);margin:0 0 5px}
+input[type=checkbox]{accent-color:var(--accent)}
+.mono{font-family:var(--mono);font-size:13px}
+code{font-family:var(--mono);font-size:12.5px;background:var(--code);padding:1px 5px;border-radius:5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:9px;padding:13px;overflow:auto;margin:6px 0 14px;font:13px/1.55 var(--mono)}
+.hidden{display:none!important}
+.gate{max-width:440px;margin:11vh auto;padding:32px;background:var(--panel);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow)}
+.gate h1{font:700 28px var(--mono);margin:12px 0 6px;letter-spacing:-.03em}
+.gate h1 i{font-style:normal;color:var(--accent)}
+.gate p{color:var(--muted)}
+.err{color:var(--bad);margin-top:8px;white-space:pre-wrap}
+.chat{display:grid;grid-template-columns:1fr 280px;gap:16px;align-items:start}
+.log{display:flex;flex-direction:column;gap:12px;min-height:300px;max-height:56vh;overflow:auto;padding:4px 2px 14px;scroll-behavior:smooth}
+.msg{padding:11px 14px;border-radius:14px;white-space:pre-wrap;word-break:break-word;max-width:86%;border:1px solid var(--line);background:var(--panel2);animation:pop .22s ease}
+.msg.assistant{border-bottom-left-radius:4px;cursor:copy}
+.msg.assistant:hover{border-color:var(--accent)}
+.msg.user{align-self:flex-end;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-color:transparent;border-bottom-right-radius:4px}
+.msg.error{border-color:var(--bad);color:var(--bad);background:transparent}
+.msg.typing{color:var(--muted);animation:pulse 1s infinite}
+@keyframes pop{from{opacity:0;transform:translateY(6px)}}
+@keyframes pulse{50%{opacity:.4}}
+.empty{color:var(--muted);padding:28px 8px;text-align:center;border:1px dashed var(--line);border-radius:10px}
+.composer{border-top:1px solid var(--line);padding-top:12px;margin-top:4px}
+.route h3{margin:0 0 10px;font-size:14px}
+.route dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:6px 12px;font-size:13px}
+.route dt{color:var(--muted)}.route dd{margin:0;font-family:var(--mono);word-break:break-all}
+.hop{display:flex;gap:8px;align-items:center;font-size:13px;margin-top:6px}
+.rails{display:flex;flex-direction:column;gap:10px}
+.rail{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:12px 16px;display:grid;grid-template-columns:14px minmax(140px,1.3fr) 2fr minmax(120px,1fr);gap:4px 16px;align-items:center;box-shadow:var(--shadow);transition:transform .15s,border-color .15s}
+.rail:hover{transform:translateY(-1px);border-color:var(--accent)}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--off);flex:none}
+.dot.ok{background:var(--ok);box-shadow:0 0 0 3px color-mix(in srgb,var(--ok) 22%,transparent)}
+.dot.warn{background:var(--warn)}.dot.bad{background:var(--bad)}
+.rail .name{font-weight:600}.rail .model{color:var(--muted);font:12px var(--mono);word-break:break-all}
+.bar{height:8px;background:var(--code);border-radius:5px;overflow:hidden}
+.bar>span{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:5px}
+.bar.hot>span{background:var(--warn)}.bar.full>span{background:var(--bad)}
+.nums{font-size:12px;color:var(--muted);margin-top:4px}
+.state{font-size:13px;text-align:right;font-weight:500}
+.totals{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:16px}
+.totals>div{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;box-shadow:var(--shadow)}
+.totals b{display:block;font-size:26px;font-family:var(--mono);letter-spacing:-.03em}
+.totals span{color:var(--muted);font-size:13px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:10px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+th{color:var(--muted);font-weight:500;font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+tbody tr:hover,tr:hover td{background:var(--panel2)}
+tr:last-child td{border-bottom:0}
+.tabs{display:inline-flex;gap:4px;margin:8px 0 12px;padding:4px;background:var(--panel2);border:1px solid var(--line);border-radius:10px}
+.tabs button{background:none;border:0;border-radius:7px;padding:5px 12px;cursor:pointer;color:var(--muted);font-weight:500}
+.tabs button:hover{color:var(--ink)}
+.tabs button[aria-pressed="true"]{background:var(--panel);color:var(--accent);box-shadow:var(--shadow)}
+.copy{float:right}
+.toast{position:fixed;bottom:20px;right:20px;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:14px;box-shadow:0 8px 28px rgba(0,0,0,.25);animation:pop .2s ease;max-width:340px;white-space:pre-wrap}
+dialog{border:1px solid var(--line);border-radius:14px;background:var(--panel);color:var(--ink);padding:20px;max-width:360px;width:92%;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+dialog::backdrop{background:rgba(8,14,22,.55);backdrop-filter:blur(3px)}
+@media(max-width:860px){.shell{grid-template-columns:1fr}
+nav{flex-direction:row;flex-wrap:wrap;height:auto;position:static;border-right:0;border-bottom:1px solid var(--line);padding:10px}
+.logo{margin:0 10px 0 4px}nav>button[data-tab]{padding:7px 10px}nav .who{margin:0 0 0 auto;padding:6px 10px}
+.chat{grid-template-columns:1fr}.rail{grid-template-columns:14px 1fr}.rail .state{text-align:left}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
 </head>
 <body>
-<header>
-  <h1>air<span>outer</span></h1>
-  <input id="key" type="password" placeholder="paste a tenant key (air_...) or the admin token" autocomplete="off">
-  <button id="signin">Sign in</button>
-  <span class="who" id="who"></span>
-</header>
 
-<main>
-  <div class="panel" id="chat-panel">
-    <div class="tabs">
-      <button class="active" data-tab="chat">Chat</button>
-      <button data-tab="usage">Usage</button>
-      <button data-tab="connect">Connect your app</button>
-      <button data-tab="admin">Admin</button>
-    </div>
-
-    <div id="tab-chat">
-      <textarea id="prompt" placeholder="Ask anything — airouter will pick the best available provider and fail over automatically."></textarea>
-      <div class="row">
-        <label>System</label>
-        <input id="system" type="text" placeholder="optional system prompt">
-      </div>
-      <div class="row">
-        <label>Model</label>
-        <input id="model" type="text" placeholder="auto (default)" value="auto">
-        <label class="small"><input type="checkbox" id="json"> JSON mode</label>
-        <button class="primary" id="send">Send</button>
-      </div>
-      <div class="out" id="answer">(answer appears here)</div>
-      <div class="meta" id="chat-meta"></div>
-    </div>
-
-    <div id="tab-usage" class="hidden">
-      <button class="ghost" id="refresh-usage">Refresh</button>
-      <div id="usage-table"></div>
-    </div>
-
-    <div id="tab-connect" class="hidden">
-      <p class="small">Point any OpenAI SDK at <code>http://<span id="host"></span>/v1</code> with your airouter key and <code>model="auto"</code>:</p>
-      <pre id="py"></pre>
-      <pre id="curl"></pre>
-    </div>
-
-    <div id="tab-admin" class="hidden">
-      <p class="small">Admin actions need the admin token (set via <code>AIROUTER_ADMIN_TOKEN</code>).</p>
-      <div class="row">
-        <button class="ghost" id="btn-bootstrap">Bootstrap free-pool</button>
-        <button class="ghost" id="btn-list-providers">List providers</button>
-        <button class="ghost" id="btn-list-tenants">List tenants</button>
-      </div>
-      <div class="out" id="admin-out">(admin output)</div>
-    </div>
+<section id="gate" class="gate hidden">
+  <div class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h6l4 10h6M4 17h6l1.5-3.7M14 7h6M17 4l3 3-3 3M17 14l3 3-3 3"/></svg></div>
+  <h1>air<i>outer</i></h1>
+  <p>Paste an airouter API key to chat, check usage and get the base URL for your own apps. Admin token works too.</p>
+  <label for="keyIn">API key</label>
+  <input id="keyIn" type="password" autocomplete="off" placeholder="air_… or admin token">
+  <div class="row" style="margin-top:12px">
+    <button class="btn" id="connect">Connect</button>
+    <label style="margin:0;display:flex;gap:6px;align-items:center"><input type="checkbox" id="remember"> Remember on this device</label>
   </div>
+  <div id="gateErr" class="err"></div>
+</section>
 
-  <div class="panel">
-    <h2>Providers</h2>
-    <div id="providers"><span class="small">Sign in to see live status.</span></div>
-  </div>
-</main>
+<div id="app" class="shell hidden">
+  <nav aria-label="Sections">
+    <div class="logo"><span class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h6l4 10h6M4 17h6l1.5-3.7M14 7h6M17 4l3 3-3 3M17 14l3 3-3 3"/></svg></span><span>air<i>outer</i></span></div>
+    <button data-tab="chat" aria-current="page"><svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>Chat</button>
+    <button data-tab="models"><svg viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5 9-5zM3 13l9 5 9-5M3 17l9 5 9-5"/></svg>My models</button>
+    <button data-tab="usage"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Usage</button>
+    <button data-tab="connect"><svg viewBox="0 0 24 24"><path d="M9 7H7a5 5 0 0 0 0 10h2M15 7h2a5 5 0 0 1 0 10h-2M8 12h8"/></svg>Connect your app</button>
+    <button data-tab="admin" id="adminTab" class="hidden"><svg viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6l8-3z"/></svg>Admin</button>
+    <div class="who"><span id="who"></span>
+      <div class="row"><button id="logout" class="btn ghost small">Sign out</button><button id="themeBtn" class="btn ghost small" title="Toggle light / dark" aria-label="Toggle theme">◐ Theme</button></div></div>
+  </nav>
+  <main>
+    <section id="tab-chat">
+      <div class="pagehead"><h2>Chat</h2>
+      <p class="sub" style="margin:0">Each message goes to the best provider that still has quota. If one fails or is limited, the next one answers.</p></div>
+      <div class="chat">
+        <div class="card">
+          <div class="log" id="log" aria-live="polite"><div class="empty" id="emptyChat">Ask anything. The panel on the right shows which provider answered. Click an answer to copy it.</div></div>
+          <div class="composer">
+          <div class="row" style="margin:0 0 8px">
+            <div style="flex:1;min-width:140px"><label for="model">Model</label><select id="model"><option value="auto">auto (recommended)</option></select></div>
+            <label style="margin:18px 0 0;display:flex;gap:6px;align-items:center"><input type="checkbox" id="jsonMode"> JSON answer</label>
+            <button class="btn ghost small" id="clearChat" style="margin-top:18px">New chat</button>
+          </div>
+          <label for="sys">System prompt (optional)</label>
+          <textarea id="sys" rows="2"></textarea>
+          <label for="prompt" style="margin-top:8px">Message</label>
+          <textarea id="prompt" rows="3" placeholder="Write a message. Ctrl+Enter to send."></textarea>
+          <div class="row" style="margin-top:10px"><button class="btn" id="send">Send</button><span id="chatErr" class="err" style="margin:0"></span></div>
+          </div>
+        </div>
+        <aside class="card route" id="route"><h3>Last route</h3><div class="sub" style="margin:0">Nothing sent yet.</div></aside>
+      </div>
+    </section>
+
+    <section id="tab-models" class="hidden">
+      <h2>My models</h2>
+      <p class="sub">Models, keys and limits you add here belong to you alone. They are tried before the shared models, and other users never see them.</p>
+      <div id="actAs" class="row hidden" style="margin-bottom:12px">
+        <div style="min-width:220px"><label for="actTenant">Managing models for tenant</label><select id="actTenant"></select></div>
+      </div>
+      <div class="card" style="overflow:auto">
+        <table id="myTable"></table>
+        <div id="myEmpty" class="empty hidden">You have no models of your own yet. Add some below.</div>
+      </div>
+      <p id="sharedNote" class="sub" style="margin-top:10px"></p>
+
+      <h2 style="margin-top:24px">Add models</h2>
+      <div class="tabs" id="addTabs" role="group" aria-label="Where to add models from">
+        <button data-p="list" aria-pressed="true">From the list</button><button data-p="ollama" aria-pressed="false">Ollama (local)</button><button data-p="json" aria-pressed="false">JSON file</button>
+      </div>
+      <div class="card" id="pane-list">
+        <div class="row" style="align-items:flex-end">
+          <div style="min-width:180px"><label for="catProv">Provider</label><select id="catProv"></select></div>
+          <div style="flex:1;min-width:240px"><label for="catKey" id="catKeyLbl">Your API key</label><input id="catKey" type="password" autocomplete="off" placeholder="paste your key; it is stored encrypted and never shown again"></div>
+        </div>
+        <div id="catModels" style="margin:14px 0"></div>
+        <div class="row"><button class="btn" id="catAdd">Add selected models</button><button class="btn ghost small" id="catAll">Select all</button><span id="catMsg" class="sub" style="margin:0"></span></div>
+      </div>
+      <div class="card hidden" id="pane-ollama">
+        <p class="sub" id="ollamaInfo">Checking Ollama…</p>
+        <div id="ollamaModels"></div>
+        <div class="row"><button class="btn" id="ollamaAdd">Add selected models</button><button class="btn ghost small" id="ollamaRefresh">Check again</button><span id="ollamaMsg" class="sub" style="margin:0"></span></div>
+      </div>
+      <div class="card hidden" id="pane-json">
+        <p class="sub">Use the same format as <code>providers.json</code>. Use <code>preset</code> and <code>model</code>, plus your own <code>api_key</code>. Environment-variable keys are not allowed for users.</p>
+        <textarea id="jsonIn" rows="9" class="mono" placeholder='{"providers":[{"preset":"groq","model":"openai/gpt-oss-20b","api_key":"gsk_...","rpm":30,"rpd":1000}]}'></textarea>
+        <div class="row" style="margin-top:10px">
+          <input type="file" id="jsonFile" accept=".json,application/json" aria-label="Choose a JSON file">
+          <button class="btn" id="jsonImport">Import</button>
+          <button class="btn ghost" id="jsonExport">Download my models (no keys)</button>
+          <span id="jsonMsg" class="sub" style="margin:0;white-space:pre-wrap"></span>
+        </div>
+      </div>
+    </section>
+
+    <section id="tab-usage" class="hidden">
+      <h2>Usage</h2>
+      <p class="sub">Live state of every provider for this account. Daily quotas reset at each provider's own midnight.</p>
+      <div class="totals" id="totals"></div>
+      <div class="rails" id="rails"></div>
+    </section>
+
+    <section id="tab-connect" class="hidden">
+      <h2>Connect your app</h2>
+      <p class="sub">airouter speaks the OpenAI API. In any OpenAI SDK, editor plugin or tool, change the base URL and use your airouter key.</p>
+      <div class="card">
+        <label>Base URL</label><pre id="baseUrl" class="mono"></pre>
+        <div class="tabs" id="snipTabs" role="group" aria-label="Example language">
+          <button data-s="curl" aria-pressed="true">curl</button><button data-s="python" aria-pressed="false">Python</button>
+          <button data-s="js" aria-pressed="false">JavaScript</button><button data-s="env" aria-pressed="false">Env vars</button>
+        </div>
+        <button class="btn ghost small copy" id="copySnip">Copy</button>
+        <pre id="snip"></pre>
+        <p class="sub" style="margin:0">Use <code>model: "auto"</code> to let airouter choose. Rate-limited or failing providers are skipped automatically. If everything is busy you get HTTP 503 with a <code>Retry-After</code> header.</p>
+      </div>
+    </section>
+
+    <section id="tab-admin" class="hidden">
+      <h2>Admin</h2>
+      <p class="sub">Providers, API keys and tenants. Provider keys are stored encrypted and are never shown again.</p>
+      <div class="row" style="margin-bottom:12px">
+        <button class="btn" id="bootstrap">Add free-tier models</button>
+        <label style="margin:0;display:flex;gap:6px;align-items:center"><input type="checkbox" id="storeKeys" checked> Save keys found in server environment into the database</label>
+      </div>
+      <div class="card" style="overflow:auto"><table id="provTable"></table></div>
+      <h2 style="margin-top:24px">Tenants</h2>
+      <div class="card">
+        <div class="row" style="margin-bottom:12px">
+          <input type="text" id="newTenant" placeholder="new tenant id, e.g. my-app" style="max-width:260px">
+          <input type="text" id="newLimit" placeholder="daily limit (0 = none)" style="max-width:180px">
+          <button class="btn" id="addTenant">Create tenant</button>
+        </div>
+        <div id="newKey" class="hidden"></div>
+        <div style="overflow:auto"><table id="tenantTable"></table></div>
+      </div>
+    </section>
+  </main>
+</div>
+<dialog id="limDlg">
+  <form method="dialog" id="limForm">
+    <h2 id="limTitle" style="font-size:17px"></h2>
+    <p class="sub" style="margin-bottom:10px">0 means no local cap. If the provider reports its own limit, that one is used.</p>
+    <div class="row">
+      <div style="flex:1"><label for="lRpm">Per minute</label><input id="lRpm" type="text" inputmode="numeric"></div>
+      <div style="flex:1"><label for="lRpd">Per day</label><input id="lRpd" type="text" inputmode="numeric"></div>
+    </div>
+    <div class="row" style="margin-top:8px">
+      <div style="flex:1"><label for="lTpm">Tokens/min</label><input id="lTpm" type="text" inputmode="numeric"></div>
+      <div style="flex:1"><label for="lWorkers">Parallel calls</label><input id="lWorkers" type="text" inputmode="numeric"></div>
+      <div style="flex:1"><label for="lPrio">Priority</label><input id="lPrio" type="text" inputmode="numeric"></div>
+    </div>
+    <div class="row" style="margin-top:16px;justify-content:flex-end"><button class="btn ghost" value="cancel">Cancel</button><button class="btn" id="limSave" value="ok">Save limits</button></div>
+  </form>
+</dialog>
+<div id="toast" class="toast hidden" role="status"></div>
 
 <script>
+"use strict";
 const $ = (id) => document.getElementById(id);
-const api = async (path, opts={}) => {
-  const key = $("key").value.trim();
-  const r = await fetch(path, {
-    ...opts,
-    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + key, ...(opts.headers||{}) },
-  });
-  const txt = await r.text();
-  let body; try { body = JSON.parse(txt); } catch { body = txt; }
-  if (!r.ok) throw new Error((body && body.error) || ("HTTP " + r.status));
-  return body;
+const store = {
+  get() { try { return sessionStorage.getItem("air_key") || localStorage.getItem("air_key") || ""; } catch (e) { return ""; } },
+  set(k, remember) { try { sessionStorage.setItem("air_key", k); if (remember) localStorage.setItem("air_key", k); } catch (e) {} },
+  clear() { try { sessionStorage.removeItem("air_key"); localStorage.removeItem("air_key"); } catch (e) {} },
 };
+let KEY = "", ROLE = "", HISTORY = [], usageTimer = null, ACT_AS = "";
 
-const signIn = async () => {
+/* ---------- theme (new) ---------- */
+(function () {
+  let t = ""; try { t = localStorage.getItem("air_theme") || ""; } catch (e) {}
+  if (t) document.documentElement.dataset.theme = t;
+  $("themeBtn").onclick = () => {
+    const dark = document.documentElement.dataset.theme ? document.documentElement.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+    const next = dark ? "light" : "dark"; document.documentElement.dataset.theme = next;
+    try { localStorage.setItem("air_theme", next); } catch (e) {}
+  };
+})();
+function grow(el) { el.style.height = "auto"; el.style.height = Math.min(el.scrollHeight + 2, 240) + "px"; }
+["prompt", "sys"].forEach((id) => $(id).addEventListener("input", (e) => grow(e.target)));
+
+function h(tag, attrs, ...kids) {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (k === "class") e.className = v; else if (k.startsWith("on")) e.addEventListener(k.slice(2), v); else e.setAttribute(k, v);
+  }
+  for (const c of kids.flat()) if (c != null) e.append(c.nodeType ? c : document.createTextNode(String(c)));
+  return e;
+}
+function toast(msg) { const t = $("toast"); t.textContent = msg; t.classList.remove("hidden"); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.add("hidden"), 2600); }
+const BASE = window.location.pathname.replace(/\/+$/, "");
+
+async function api(path, opts = {}) {
+  const res = await fetch(BASE + path, { ...opts, headers: { Authorization: "Bearer " + KEY, ...(ROLE === "admin" && ACT_AS ? { "X-Tenant-ID": ACT_AS } : {}), ...(opts.body && !(opts.body instanceof FormData) ? { "Content-Type": "application/json" } : {}), ...(opts.headers || {}) } });
+  let data = null; const text = await res.text();
+  try { data = text ? JSON.parse(text) : null; } catch (e) { data = { raw: text }; }
+  if (!res.ok) {
+    const e = data && data.error; const msg = typeof e === "string" ? e : (e && e.message) || res.statusText;
+    const err = new Error(msg); err.status = res.status; err.data = data; err.retry = res.headers.get("Retry-After"); throw err;
+  }
+  return data;
+}
+function explain(err) {
+  let m = err.status ? "HTTP " + err.status + ": " + err.message : err.message;
+  if (err.retry) m += "\nTry again in " + err.retry + "s.";
+  const reasons = err.data && (err.data.reasons || (err.data.airouter && err.data.airouter.reasons));
+  if (reasons) m += "\n" + Object.entries(reasons).map(([k, v]) => "• " + k + ": " + v).join("\n");
+  const att = err.data && (err.data.attempts || (err.data.airouter && err.data.airouter.attempts));
+  if (att) m += "\n" + att.map((a) => "• " + a.provider + ": " + a.error).join("\n");
+  return m;
+}
+
+/* ---------- connect / gate ---------- */
+async function start(key, remember) {
+  KEY = key;
   try {
     const me = await api("/v1/whoami");
-    $("who").textContent = (me.role === "admin" ? "admin" : "tenant") + ": " + me.tenant.id;
-    refreshProviders();
-  } catch (e) { $("who").textContent = "error: " + e.message; }
-};
+    ROLE = me.role; store.set(key, remember);
+    $("gate").classList.add("hidden"); $("app").classList.remove("hidden");
+    $("who").textContent = ROLE === "admin" ? "Admin · tenant " + me.tenant.id : "Tenant " + me.tenant.id;
+    $("adminTab").classList.toggle("hidden", ROLE !== "admin");
+    loadModels(); renderConnect(); show("chat");
+  } catch (e) {
+    KEY = ""; store.clear();
+    $("app").classList.add("hidden"); $("gate").classList.remove("hidden");
+    $("gateErr").textContent = e.status === 401 ? "That key was not accepted. Check it and try again." : explain(e);
+  }
+}
+$("connect").onclick = () => { const k = $("keyIn").value.trim(); if (k) start(k, $("remember").checked); };
+$("keyIn").addEventListener("keydown", (e) => { if (e.key === "Enter") $("connect").click(); });
+$("logout").onclick = () => { store.clear(); KEY = ""; HISTORY = []; location.reload(); };
 
-const refreshProviders = async () => {
+/* ---------- tabs ---------- */
+function show(tab) {
+  document.querySelectorAll("nav [data-tab]").forEach((b) => {
+    if (b.dataset.tab === tab) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current");
+  });
+  ["chat", "models", "usage", "connect", "admin"].forEach((t) => $("tab-" + t).classList.toggle("hidden", t !== tab));
+  clearInterval(usageTimer);
+  if (tab === "usage") { loadUsage(); usageTimer = setInterval(() => { if (!document.hidden) loadUsage(); }, 8000); }
+  if (tab === "admin") loadAdmin();
+  if (tab === "models") loadMine();
+}
+document.querySelectorAll("nav [data-tab]").forEach((b) => b.addEventListener("click", () => show(b.dataset.tab)));
+
+/* ---------- chat ---------- */
+async function loadModels() {
   try {
-    const u = await api("/v1/usage");
-    const rows = (u.providers||[]).map(p => {
-      const stateCls = p.state === "ok" ? "ok" : (p.state.includes("paused") || p.state.includes("limit") ? "err" : "warn");
-      return `<tr><td><b>${p.name||p.model}</b><br><span class="small">${p.model}</span></td>
-        <td><span class="pill ${stateCls}">${p.state}</span></td>
-        <td>${p.used_today||0}/${p.rpd||"-"}</td>
-        <td>${(p.remaining_today!=null)?p.remaining_today:"-"}</td>
-        <td class="small">${p.reset_tz}</td></tr>`;
-    }).join("");
-    $("providers").innerHTML = `<table><thead><tr><th>Provider</th><th>State</th><th>Used/RPD</th><th>Left</th><th>TZ</th></tr></thead><tbody>${rows}</tbody></table>`;
-  } catch (e) { $("providers").innerHTML = '<span class="small">' + e.message + "</span>"; }
-};
-
-const send = async () => {
-  $("answer").textContent = "thinking...";
-  $("chat-meta").textContent = "";
-  const body = {
-    messages: [{role:"user", content: $("prompt").value}],
-    system: $("system").value || undefined,
-    model: $("model").value || "auto",
-    response_format: $("json").checked ? {type:"json_object"} : undefined,
-  };
+    const m = await api("/v1/models"); const sel = $("model");
+    sel.replaceChildren(h("option", { value: "auto" }, "auto (recommended)"), ...m.data.filter((x) => x.id !== "auto").map((x) => h("option", { value: x.id }, x.id)));
+  } catch (e) { /* the list is optional */ }
+}
+function addMsg(role, text, cls) {
+  $("emptyChat")?.remove();
+  const d = h("div", { class: "msg " + role + (cls ? " " + cls : "") }, text); $("log").append(d); $("log").scrollTop = $("log").scrollHeight;
+  if (role === "assistant") { d.title = "Click to copy"; d.addEventListener("click", async () => { if (String(getSelection())) return; if (d.classList.contains("error") || d.classList.contains("typing")) return; try { await navigator.clipboard.writeText(d.textContent); toast("Answer copied"); } catch (e) {} }); }
+  return d;
+}
+function setRoute(data, ms) {
+  const a = (data.airouter && data.airouter.attempts) || [];
+  const box = $("route"); box.replaceChildren(h("h3", {}, "Last route"),
+    h("dl", {}, h("dt", {}, "Provider"), h("dd", {}, data.airouter.provider), h("dt", {}, "Model"), h("dd", {}, data.model),
+      h("dt", {}, "Tokens"), h("dd", {}, data.usage.total_tokens || "n/a"), h("dt", {}, "Time"), h("dd", {}, ms + " ms")),
+    a.length ? h("div", { class: "sub", style: "margin:12px 0 0" }, "Switched after " + a.length + " failed provider" + (a.length > 1 ? "s" : "") + ":") : null,
+    ...a.map((x) => h("div", { class: "hop" }, h("span", { class: "dot bad" }), h("span", {}, x.provider + (x.status ? " (" + x.status + ")" : "") + ": " + (x.kind || "failed")))));
+}
+async function send() {
+  const text = $("prompt").value.trim(); if (!text) return;
+  $("chatErr").textContent = ""; $("send").disabled = true;
+  addMsg("user", text); HISTORY.push({ role: "user", content: text }); $("prompt").value = ""; grow($("prompt"));
+  const msgs = ($("sys").value.trim() ? [{ role: "system", content: $("sys").value.trim() }] : []).concat(HISTORY);
+  const t0 = performance.now(), wait = addMsg("assistant", "Thinking…", "typing");
   try {
-    const t0 = performance.now();
-    const r = await api("/v1/chat/completions", {method:"POST", body: JSON.stringify(body)});
-    const dt = ((performance.now() - t0)/1000).toFixed(2);
-    $("answer").textContent = r.choices[0].message.content;
-    const ar = r.airouter || {};
-    $("chat-meta").innerHTML = `<b>${ar.provider}</b> / ${r.model}, ${r.usage.total_tokens} tokens, ${dt}s, ${ar.latency_ms||0}ms` +
-      (ar.attempts && ar.attempts.length ? ` · failover: ${ar.attempts.map(a=>a.provider).join(", ")}` : "");
-    refreshProviders();
-  } catch (e) { $("answer").textContent = "error: " + e.message; }
+    const body = { model: $("model").value, messages: msgs }; if ($("jsonMode").checked) body.response_format = { type: "json_object" };
+    const data = await api("/v1/chat/completions", { method: "POST", body: JSON.stringify(body) });
+    const out = data.choices[0].message.content; wait.classList.remove("typing"); wait.textContent = out; HISTORY.push({ role: "assistant", content: out });
+    setRoute(data, Math.round(performance.now() - t0));
+  } catch (e) { wait.className = "msg error"; wait.textContent = explain(e); HISTORY.pop(); }
+  $("send").disabled = false; $("log").scrollTop = $("log").scrollHeight; $("prompt").focus();
+}
+$("send").onclick = send;
+$("prompt").addEventListener("keydown", (e) => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) send(); });
+$("clearChat").onclick = () => { HISTORY = []; $("log").replaceChildren(h("div", { class: "empty", id: "emptyChat" }, "New chat. Earlier messages are not sent.")); };
+
+/* ---------- usage ---------- */
+function fmtDur(s) { if (s == null) return ""; const hh = Math.floor(s / 3600), mm = Math.floor((s % 3600) / 60); return hh ? hh + "h " + mm + "m" : mm + "m"; }
+function stateClass(s) { if (s === "ok") return "ok"; if (s === "cooling down") return "warn"; if (s.startsWith("paused") || s.includes("limit")) return "bad"; return ""; }
+async function loadUsage() {
+  try {
+    const d = await api("/v1/usage"), u = d.usage;
+    $("totals").replaceChildren(
+      h("div", {}, h("b", {}, u.requests_today), h("span", {}, "requests today")), h("div", {}, h("b", {}, u.tokens_today), h("span", {}, "tokens today")),
+      h("div", {}, h("b", {}, u.tenant_daily_limit || "none"), h("span", {}, "your daily cap")));
+    $("rails").replaceChildren(...d.providers.map((p) => {
+      const pct = p.rpd ? Math.min(100, Math.round((p.used_today / p.rpd) * 100)) : 0;
+      const u = p.upstream;
+      let up = "";
+      if (u && u.remaining_requests >= 0) {
+        const left = u.reset_requests_seconds > 0 ? Math.max(0, u.reset_requests_seconds - Math.round((Date.now() - Date.parse(u.as_of)) / 1000)) : 0;
+        up = " · provider reports " + u.remaining_requests + (u.limit_requests > 0 ? " of " + u.limit_requests : "") + " left" + (left ? ", resets in " + (left >= 60 ? Math.floor(left / 60) + "m " + (left % 60) + "s" : left + "s") : "");
+      }
+      const src = p.limits_source === "reported" ? " (limit from provider)" : "";
+      return h("div", { class: "rail" }, h("span", { class: "dot " + stateClass(p.state) }),
+        h("div", {}, h("div", { class: "name" }, p.name), h("div", { class: "model" }, p.model)),
+        h("div", {}, h("div", { class: "bar" + (pct >= 100 ? " full" : pct >= 80 ? " hot" : ""), role: "img", "aria-label": pct + "% of daily limit used" }, h("span", { style: "width:" + (p.rpd ? pct : 0) + "%" })),
+          h("div", { class: "nums" }, p.used_today + (p.rpd ? " / " + p.rpd : "") + src + " today · " + p.requests_last_minute + " in last minute" + up)),
+        h("div", { class: "state" }, p.state, h("div", { class: "nums" }, "resets in " + fmtDur(p.resets_in_seconds))));
+    }));
+  } catch (e) { $("rails").replaceChildren(h("div", { class: "err" }, explain(e))); }
+}
+
+/* ---------- connect ---------- */
+let snipKind = "curl";
+function snippet(kind) {
+  const base = location.origin + "/v1", k = KEY && ROLE === "tenant" ? KEY : "YOUR_AIROUTER_KEY";
+  return {
+    curl: `curl ${base}/chat/completions \\\n  -H "Authorization: Bearer ${k}" \\\n  -H "Content-Type: application/json" \\\n  -d '{"model":"auto","messages":[{"role":"user","content":"Hello"}]}'`,
+    python: `from openai import OpenAI\n\nclient = OpenAI(base_url="${base}", api_key="${k}")\nr = client.chat.completions.create(\n    model="auto",\n    messages=[{"role": "user", "content": "Hello"}],\n)\nprint(r.choices[0].message.content)`,
+    js: `import OpenAI from "openai";\n\nconst client = new OpenAI({ baseURL: "${base}", apiKey: "${k}" });\nconst r = await client.chat.completions.create({\n  model: "auto",\n  messages: [{ role: "user", content: "Hello" }],\n});\nconsole.log(r.choices[0].message.content);`,
+    env: `OPENAI_BASE_URL=${base}\nOPENAI_API_KEY=${k}`,
+  }[kind];
+}
+function renderConnect() { $("baseUrl").textContent = location.origin + "/v1"; $("snip").textContent = snippet(snipKind); }
+document.querySelectorAll("#snipTabs button").forEach((b) => b.addEventListener("click", () => {
+  snipKind = b.dataset.s; document.querySelectorAll("#snipTabs button").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); renderConnect();
+}));
+$("copySnip").onclick = async () => { try { await navigator.clipboard.writeText($("snip").textContent); toast("Copied"); } catch (e) { toast("Select the text and copy it manually"); } };
+
+/* ---------- admin ---------- */
+async function loadAdmin() {
+  try {
+    const ps = await api("/v1/providers");
+    $("provTable").replaceChildren(h("tr", {}, ...["", "Name", "Model", "State", "Key", "Used", ""].map((x) => h("th", {}, x))),
+      ...ps.map((p) => h("tr", {}, h("td", {}, h("span", { class: "dot " + stateClass(p.state) })), h("td", {}, p.name), h("td", { class: "mono" }, p.model), h("td", {}, p.state),
+        h("td", { class: "mono" }, p.key_source + (p.key_hint ? " " + p.key_hint : "")), h("td", {}, p.used_today + (p.rpd ? "/" + p.rpd : "")),
+        h("td", {}, h("div", { class: "row" },
+          h("button", { class: "btn ghost small", onclick: () => act(p.id, "reset") }, "Retry now"),
+          h("button", { class: "btn ghost small", onclick: () => act(p.id, p.state === "disabled" ? "enable" : "disable") }, p.state === "disabled" ? "Enable" : "Disable"),
+          h("button", { class: "btn ghost small", onclick: () => setKey(p) }, "Set key"))))));
+    const ts = await api("/v1/tenants");
+    $("tenantTable").replaceChildren(h("tr", {}, ...["Tenant", "Daily cap", "Created", ""].map((x) => h("th", {}, x))),
+      ...ts.map((t) => h("tr", {}, h("td", {}, t.id), h("td", {}, t.daily_request_limit || "none"), h("td", {}, (t.created_at || "").slice(0, 10)),
+        h("td", {}, h("button", { class: "btn ghost small", onclick: () => rotate(t.id) }, "Rotate key")))));
+  } catch (e) { toast(explain(e)); }
+}
+async function act(id, a) { try { await api("/v1/providers/" + id + "/" + a, { method: "POST" }); toast("Done"); loadAdmin(); } catch (e) { toast(explain(e)); } }
+async function setKey(p) {
+  const k = prompt("New API key for " + p.name + " (stored encrypted, never shown again):"); if (!k) return;
+  try { await api("/v1/providers/" + p.id + "/key", { method: "POST", body: JSON.stringify({ api_key: k.trim() }) }); toast("Key saved"); loadAdmin(); } catch (e) { toast(explain(e)); }
+}
+function showKey(title, key) {
+  const box = $("newKey"); box.classList.remove("hidden");
+  box.replaceChildren(h("div", { class: "sub", style: "margin:0" }, title + " Copy it now. It is not shown again."), h("pre", { class: "mono" }, key));
+}
+async function rotate(id) {
+  if (!confirm("Rotate the key for " + id + "? The old key stops working immediately.")) return;
+  try { const r = await api("/v1/tenants/" + encodeURIComponent(id) + "/rotate-key", { method: "POST" }); showKey("New key for " + id + ".", r.api_key); } catch (e) { toast(explain(e)); }
+}
+$("addTenant").onclick = async () => {
+  const id = $("newTenant").value.trim(); if (!id) return;
+  try { const r = await api("/v1/tenants", { method: "POST", body: JSON.stringify({ id, daily_request_limit: parseInt($("newLimit").value || "0", 10) || 0 }) }); showKey("Tenant " + id + " created.", r.api_key); $("newTenant").value = ""; loadAdmin(); } catch (e) { toast(explain(e)); }
+};
+$("bootstrap").onclick = async () => {
+  try { const r = await api("/v1/bootstrap" + ($("storeKeys").checked ? "?store_keys=1" : ""), { method: "POST" }); toast("Added " + r.added.length + ", skipped " + r.skipped.length); loadAdmin(); } catch (e) { toast(explain(e)); }
 };
 
-// Tabs
-document.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click", () => {
-  document.querySelectorAll(".tabs button").forEach(x => x.classList.remove("active"));
-  b.classList.add("active");
-  ["chat","usage","connect","admin"].forEach(t => $("tab-"+t).classList.toggle("hidden", t !== b.dataset.tab));
-  if (b.dataset.tab === "usage") refreshUsage();
-  if (b.dataset.tab === "connect") fillConnect();
+/* ---------- my models ---------- */
+let CATALOG = null, MINE = [];
+const post = (path, obj) => api(path, { method: "POST", body: obj === undefined ? undefined : JSON.stringify(obj) });
+function stateDot(s) { return h("span", { class: "dot " + stateClass(s), title: s }); }
+
+async function loadMine() {
+  if (ROLE === "admin" && !$("actTenant").options.length) {
+    try {
+      const ts = await api("/v1/tenants");
+      $("actTenant").replaceChildren(...ts.map((t) => h("option", { value: t.id }, t.id)));
+      ACT_AS = $("actTenant").value; $("actAs").classList.remove("hidden");
+    } catch (e) {}
+  }
+  try {
+    const d = await api("/v1/me/providers"); MINE = d.own;
+    $("myEmpty").classList.toggle("hidden", d.own.length > 0);
+    $("myTable").replaceChildren(...(d.own.length ? [h("tr", {}, ...["", "Model", "Key", "Used today", "Limits", ""].map((x) => h("th", {}, x)))] : []),
+      ...d.own.map((p) => h("tr", {}, h("td", {}, stateDot(p.state)),
+        h("td", {}, h("div", {}, p.name), h("div", { class: "mono", style: "color:var(--muted)" }, p.model + " · " + p.state)),
+        h("td", { class: "mono" }, p.key_source === "not needed" ? "none needed" : (p.key_hint || p.key_source)),
+        h("td", {}, p.used_today + (p.rpd ? " / " + p.rpd : "")),
+        h("td", { class: "mono" }, (p.rpm || "∞") + "/min · " + (p.tpm ? p.tpm + " tok/min" : "no token cap")),
+        h("td", {}, h("div", { class: "row" },
+          h("button", { class: "btn ghost small", onclick: () => editLimits(p) }, "Limits"),
+          p.kind === "ollama" ? null : h("button", { class: "btn ghost small", onclick: () => newKey(p) }, "Change key"),
+          h("button", { class: "btn ghost small", onclick: () => mineAct(p.id, "reset") }, "Retry now"),
+          h("button", { class: "btn ghost small", onclick: () => mineAct(p.id, p.state === "disabled" ? "enable" : "disable") }, p.state === "disabled" ? "Turn on" : "Turn off"),
+          h("button", { class: "btn ghost small", onclick: () => removeMine(p) }, "Remove"))))));
+    const n = d.shared.length;
+    $("sharedNote").textContent = n ? n + " shared model" + (n > 1 ? "s" : "") + " from the server owner also serve your requests after yours: " + d.shared.slice(0, 6).map((x) => x.name).join(", ") + (n > 6 ? ", …" : "") + "." : "No shared models are set up on this server.";
+    CATALOG = await api("/v1/me/catalog");
+    renderCatalog();
+  } catch (e) { toast(explain(e)); }
+}
+$("actTenant").addEventListener("change", () => { ACT_AS = $("actTenant").value; loadMine(); loadModels(); });
+
+async function mineAct(id, a) { try { await post("/v1/me/providers/" + id + "/" + a); loadMine(); } catch (e) { toast(explain(e)); } }
+async function newKey(p) {
+  const k = prompt("New API key for " + p.name + ".\nIt is stored encrypted and never shown again."); if (!k) return;
+  try { await post("/v1/me/providers/" + p.id + "/key", { api_key: k.trim() }); toast("Key saved"); loadMine(); } catch (e) { toast(explain(e)); }
+}
+async function removeMine(p) {
+  if (!confirm("Remove " + p.name + "? Its key is deleted from the server.")) return;
+  try { await api("/v1/me/providers/" + p.id, { method: "DELETE" }); loadMine(); } catch (e) { toast(explain(e)); }
+}
+let limTarget = null;
+function editLimits(p) {
+  limTarget = p; $("limTitle").textContent = p.name;
+  $("lRpm").value = p.rpm; $("lRpd").value = p.rpd; $("lTpm").value = p.tpm; $("lWorkers").value = p.workers || 2; $("lPrio").value = p.priority;
+  $("limDlg").showModal();
+}
+$("limForm").addEventListener("submit", async (e) => {
+  if (e.submitter && e.submitter.value !== "ok") return;
+  const n = (id) => Math.max(0, parseInt($(id).value || "0", 10) || 0);
+  try { await post("/v1/me/providers/" + limTarget.id + "/limits", { rpm: n("lRpm"), rpd: n("lRpd"), tpm: n("lTpm"), workers: n("lWorkers"), priority: n("lPrio") }); toast("Limits saved"); loadMine(); } catch (err) { toast(explain(err)); }
+});
+
+/* add: from the list */
+function renderCatalog() {
+  const sel = $("catProv"), keep = sel.value;
+  sel.replaceChildren(...CATALOG.providers.map((p) => h("option", { value: p.preset }, p.preset)));
+  if (keep) sel.value = keep;
+  renderCatModels();
+}
+function renderCatModels() {
+  const pv = CATALOG.providers.find((p) => p.preset === $("catProv").value); if (!pv) return;
+  $("catKeyLbl").textContent = "Your " + pv.preset + " API key" + (pv.key_env ? " (" + pv.key_env + ")" : "");
+  $("catModels").replaceChildren(...CATALOG.models.filter((m) => m.preset === pv.preset).map((m) =>
+    h("label", { style: "display:flex;gap:8px;align-items:baseline;color:var(--ink);font-size:14px;margin:0 0 6px" },
+      h("input", Object.assign({ type: "checkbox", value: m.model, class: "catChk" }, m.added ? { disabled: "disabled" } : {})),
+      h("span", {}, m.model, h("span", { class: "mono", style: "color:var(--muted)" }, " · " + m.category + " · " + (m.rpm ? m.rpm + "/min" : "no per-min cap") + (m.rpd ? " · " + m.rpd + "/day" : "") + (m.added ? " · already added" : ""))))));
+}
+$("catProv").addEventListener("change", renderCatModels);
+$("catAll").onclick = () => document.querySelectorAll(".catChk:not(:disabled)").forEach((c) => { c.checked = true; });
+$("catAdd").onclick = async () => {
+  const models = [...document.querySelectorAll(".catChk:checked")].map((c) => c.value);
+  if (!models.length) { $("catMsg").textContent = "Tick at least one model."; return; }
+  if (!$("catKey").value.trim()) { $("catMsg").textContent = "Paste your API key first."; return; }
+  try {
+    const r = await post("/v1/me/catalog/add", { preset: $("catProv").value, api_key: $("catKey").value.trim(), models });
+    $("catKey").value = ""; $("catMsg").textContent = "Added " + r.added.length + (r.skipped && r.skipped.length ? ". Skipped: " + r.skipped.join("; ") : ""); loadMine();
+  } catch (e) { $("catMsg").textContent = explain(e); }
+};
+
+/* add: Ollama */
+async function loadOllama() {
+  try {
+    const d = await api("/v1/me/ollama"); const have = new Set(MINE.map((p) => p.model));
+    $("ollamaInfo").textContent = d.available ? (d.models.length ? "Models installed on this server's Ollama. They run on the server's hardware, so they are slower, but they never hit a quota." : "Ollama is running but has no models. Install one with: ollama pull gemma3:4b") : d.error;
+    $("ollamaModels").replaceChildren(...d.models.map((m) => h("label", { style: "display:flex;gap:8px;align-items:baseline;color:var(--ink);font-size:14px;margin:0 0 6px" },
+      h("input", Object.assign({ type: "checkbox", value: m.name, class: "olChk" }, have.has(m.name) ? { disabled: "disabled" } : {})),
+      h("span", {}, m.name, h("span", { class: "mono", style: "color:var(--muted)" }, " · " + (m.parameter_size || "") + " " + m.size_gb + " GB" + (have.has(m.name) ? " · already added" : ""))))));
+  } catch (e) { $("ollamaInfo").textContent = explain(e); }
+}
+$("ollamaRefresh").onclick = loadOllama;
+$("ollamaAdd").onclick = async () => {
+  const models = [...document.querySelectorAll(".olChk:checked")].map((c) => c.value); if (!models.length) { $("ollamaMsg").textContent = "Tick at least one model."; return; }
+  try { const r = await post("/v1/me/ollama/add", { models }); $("ollamaMsg").textContent = "Added " + r.added.length + (r.skipped && r.skipped.length ? ". Skipped: " + r.skipped.join("; ") : ""); await loadMine(); loadOllama(); } catch (e) { $("ollamaMsg").textContent = explain(e); }
+};
+
+/* add: JSON */
+$("jsonFile").addEventListener("change", async (e) => { const f = e.target.files[0]; if (f) $("jsonIn").value = await f.text(); });
+$("jsonImport").onclick = async () => {
+  let body; try { body = JSON.parse($("jsonIn").value); } catch (e) { $("jsonMsg").textContent = "That is not valid JSON: " + e.message; return; }
+  try {
+    const r = await post("/v1/me/import", body); const bad = Object.entries(r.failed || {});
+    $("jsonMsg").textContent = "Added " + (r.added || []).length + (bad.length ? "\nNot added:\n" + bad.map(([k, v]) => "• " + k + ": " + v).join("\n") : ""); loadMine();
+  } catch (e) { $("jsonMsg").textContent = explain(e); }
+};
+$("jsonExport").onclick = async () => {
+  try {
+    const res = await fetch(BASE +"/v1/me/export", { headers: { Authorization: "Bearer " + KEY, ...(ROLE === "admin" && ACT_AS ? { "X-Tenant-ID": ACT_AS } : {}) } });
+    const url = URL.createObjectURL(await res.blob()); const a = h("a", { href: url, download: "airouter-models.json" }); document.body.append(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  } catch (e) { toast(explain(e)); }
+};
+document.querySelectorAll("#addTabs button").forEach((b) => b.addEventListener("click", () => {
+  document.querySelectorAll("#addTabs button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+  ["list", "ollama", "json"].forEach((p) => $("pane-" + p).classList.toggle("hidden", p !== b.dataset.p));
+  if (b.dataset.p === "ollama") loadOllama();
 }));
 
-const refreshUsage = async () => {
-  try {
-    const u = await api("/v1/usage");
-    const rows = (u.usage.providers||[]).map(p => `<tr><td>${p.provider}</td><td>${p.model}</td><td>${p.day}</td><td>${p.tenant_requests}</td><td>${p.tenant_tokens}</td><td>${p.all_tenants_requests}</td><td>${p.limit_per_day||"-"}</td></tr>`).join("");
-    $("usage-table").innerHTML = `<p class="small">tenant <b>${u.usage.tenant}</b>: ${u.usage.requests_today} requests, ${u.usage.tokens_today} tokens (limit: ${u.usage.tenant_daily_limit||"∞"})</p>
-      <table><thead><tr><th>Provider</th><th>Model</th><th>Day</th><th>Yours</th><th>Tokens</th><th>All</th><th>Limit/day</th></tr></thead><tbody>${rows}</tbody></table>`;
-  } catch (e) { $("usage-table").innerHTML = '<span class="small">' + e.message + "</span>"; }
-};
-
-const fillConnect = () => {
-  const host = location.host;
-  $("host").textContent = host;
-  const key = $("key").value.trim() || "air_...";
-  $("py").textContent =
-    `from openai import OpenAI\n` +
-    `client = OpenAI(base_url="http://${host}/v1", api_key="${key}")\n` +
-    `print(client.chat.completions.create(\n` +
-    `    model="auto",\n` +
-    `    messages=[{"role":"user","content":"Hello"}]).choices[0].message.content)`;
-  $("curl").textContent =
-    `curl -s http://${host}/v1/chat/completions \\\n` +
-    `  -H "Authorization: Bearer ${key}" \\\n` +
-    `  -H "Content-Type: application/json" \\\n` +
-    `  -d '{"model":"auto","messages":[{"role":"user","content":"Hello"}]}'`;
-};
-
-// Admin
-const adminCall = async (path, method="POST", body) => {
-  try {
-    const r = await api(path, {method, body: body ? JSON.stringify(body) : undefined});
-    $("admin-out").textContent = JSON.stringify(r, null, 2);
-  } catch (e) { $("admin-out").textContent = "error: " + e.message; }
-};
-$("btn-bootstrap").onclick = () => adminCall("/v1/bootstrap?category=text&store_keys=1");
-$("btn-list-providers").onclick = () => adminCall("/v1/providers", "GET");
-$("btn-list-tenants").onclick = () => adminCall("/v1/tenants", "GET");
-
-$("signin").onclick = signIn;
-$("send").onclick = send;
-$("refresh-usage").onclick = refreshUsage;
-$("prompt").addEventListener("keydown", (e) => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) send(); });
+/* ---------- boot ---------- */
+const saved = store.get();
+if (saved) start(saved, false); else $("gate").classList.remove("hidden");
 </script>
 </body>
 </html>
