@@ -1,0 +1,2210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>airouter-py — HTTP API Reference</title>
+<meta name="description" content="Complete HTTP API reference for the airouter-py package — a router across free-tier AI providers (Groq, Gemini, OpenRouter, Z.AI, SambaNova, Ollama) with automatic failover for text, TTS and STT.">
+<meta name="theme-color" content="#0b1020">
+<style>
+/* ===== Tokens ===== */
+:root {
+  --bg: #0b1020;
+  --bg-2: #0d1426;
+  --panel: #141a2e;
+  --panel-2: #1a2138;
+  --border: #232a44;
+  --border-strong: #2e3656;
+  --text: #e5e7eb;
+  --text-muted: #94a3b8;
+  --text-dim: #6b7390;
+  --accent: #6ee7ff;
+  --accent-2: #a78bfa;
+  --amber: #fbbf24;
+  --green: #22c55e;
+  --blue: #3b82f6;
+  --red: #ef4444;
+  --orange: #f59e0b;
+  --code-bg: #0a1020;
+  --code-border: #1c2440;
+  --mono: "JetBrains Mono", "SF Mono", "Cascadia Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+code { font-family: var(--mono); }
+
+/* ===== Topbar ===== */
+.topbar {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(11,16,32,0.92);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+}
+.topbar-inner {
+  display: flex; align-items: center; gap: 14px;
+  padding: 10px 20px;
+}
+.brand { display: flex; align-items: baseline; gap: 10px; }
+.brand-name {
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--accent);
+  letter-spacing: -0.01em;
+}
+.brand-dash { color: var(--text-muted); }
+.version {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+.topbar-links { margin-left: auto; display: flex; gap: 16px; }
+.topbar-links a {
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+}
+.topbar-links a:hover { color: var(--accent); text-decoration: none; }
+.sidebar-toggle {
+  display: none;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  color: var(--accent);
+  font-size: 16px;
+  width: 34px; height: 34px;
+  border-radius: 6px;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+.search-bar {
+  padding: 0 20px 12px;
+  display: flex; align-items: center; gap: 12px;
+}
+#searchInput {
+  flex: 1;
+  background: var(--panel);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 9px 14px;
+  font-size: 14px;
+  font-family: var(--sans);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+#searchInput:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(110,231,255,0.1);
+}
+#searchInput::placeholder { color: var(--text-dim); }
+.search-hint {
+  font-size: 12px;
+  color: var(--text-dim);
+  min-width: 90px;
+  text-align: right;
+  font-family: var(--mono);
+}
+
+/* ===== Layout ===== */
+.layout {
+  display: grid;
+  grid-template-columns: 282px 1fr;
+  align-items: start;
+}
+.sidebar {
+  position: sticky;
+  top: 113px;
+  height: calc(100vh - 113px);
+  overflow-y: auto;
+  padding: 18px 10px 40px 18px;
+  border-right: 1px solid var(--border);
+  background: var(--bg-2);
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
+.sidebar::-webkit-scrollbar { width: 8px; }
+.sidebar::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 4px; }
+.sidebar::-webkit-scrollbar-track { background: transparent; }
+
+.nav-section { margin-bottom: 16px; }
+.nav-section-title {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-dim);
+  font-weight: 700;
+  padding: 4px 8px 6px;
+}
+.nav-section ul { list-style: none; padding: 0; margin: 0; }
+.nav-link {
+  display: flex; align-items: center; gap: 8px;
+  padding: 4px 8px;
+  font-size: 12.5px;
+  color: var(--text-muted);
+  text-decoration: none;
+  border-radius: 4px;
+  transition: background 0.1s, color 0.1s;
+}
+.nav-link:hover { background: var(--panel); color: var(--text); text-decoration: none; }
+.nav-method {
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 5px;
+  border-radius: 3px;
+  min-width: 42px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.nav-method.GET { background: rgba(34,197,94,0.14); color: var(--green); }
+.nav-method.POST { background: rgba(59,130,246,0.14); color: var(--blue); }
+.nav-method.DELETE { background: rgba(239,68,68,0.14); color: var(--red); }
+.nav-method.PATCH { background: rgba(245,158,11,0.14); color: var(--orange); }
+.nav-path {
+  font-family: var(--mono);
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.content {
+  padding: 24px 32px 80px;
+  max-width: 1180px;
+  min-width: 0;
+}
+
+/* ===== Intro ===== */
+.intro { margin-bottom: 28px; }
+.intro h1 {
+  font-size: 30px;
+  font-weight: 800;
+  margin: 0 0 8px;
+  letter-spacing: -0.02em;
+}
+.intro .lead {
+  margin: 0 0 16px;
+  color: var(--text-muted);
+  font-size: 15px;
+  max-width: 760px;
+}
+.intro .lead code {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 12.5px;
+  color: var(--accent);
+}
+.intro-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 10px;
+}
+.intro-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+.intro-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+  margin-bottom: 5px;
+  font-weight: 700;
+}
+.intro-card code {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--accent);
+  word-break: break-all;
+}
+
+/* ===== Section header ===== */
+.section-anchor { scroll-margin-top: 113px; }
+.section-header {
+  margin: 36px 0 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.section-header h2 {
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0 0 4px;
+  letter-spacing: -0.01em;
+}
+.section-header p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+/* ===== Endpoint card ===== */
+.endpoint-card, .shape-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin-bottom: 18px;
+  overflow: hidden;
+  scroll-margin-top: 113px;
+}
+.endpoint-header {
+  display: flex; align-items: center; gap: 12px;
+  padding: 13px 18px;
+  background: var(--panel-2);
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+.method-badge {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 9px;
+  border-radius: 4px;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+.method-badge.GET { background: var(--green); color: #0b1020; }
+.method-badge.POST { background: var(--blue); color: #fff; }
+.method-badge.DELETE { background: var(--red); color: #fff; }
+.method-badge.PATCH { background: var(--orange); color: #0b1020; }
+.endpoint-path {
+  font-family: var(--mono);
+  font-size: 15px;
+  color: var(--text);
+  font-weight: 600;
+  word-break: break-all;
+}
+.path-param {
+  color: var(--accent);
+  background: rgba(110,231,255,0.1);
+  padding: 1px 5px;
+  border-radius: 3px;
+  margin: 0 1px;
+}
+.auth-badge {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 12px;
+  border: 1px solid;
+  text-transform: capitalize;
+  flex-shrink: 0;
+}
+.auth-badge.public { color: var(--text-muted); border-color: var(--border-strong); background: var(--bg-2); }
+.auth-badge.tenant { color: var(--accent); border-color: rgba(110,231,255,0.3); background: rgba(110,231,255,0.05); }
+.auth-badge.admin { color: var(--amber); border-color: rgba(251,191,36,0.3); background: rgba(251,191,36,0.05); }
+
+.endpoint-body, .shape-body { padding: 16px 18px 18px; }
+.endpoint-summary {
+  margin: 0 0 14px;
+  color: var(--text-muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.endpoint-summary code { color: var(--accent); background: var(--bg-2); padding: 1px 5px; border-radius: 3px; font-size: 12.5px; }
+
+.endpoint-section { margin-bottom: 16px; }
+.endpoint-section:last-child { margin-bottom: 0; }
+.endpoint-section h4, .shape-body h4 {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+  margin: 0 0 8px;
+  font-weight: 700;
+}
+.endpoint-section h4 .content-type-hint {
+  font-size: 11px;
+  color: var(--accent-2);
+  margin-left: 6px;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0;
+  font-family: var(--mono);
+}
+
+/* ===== Tables ===== */
+table.params {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  display: block;
+  overflow-x: auto;
+}
+table.params th, table.params td {
+  text-align: left;
+  padding: 7px 11px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+table.params th {
+  color: var(--text-dim);
+  font-weight: 700;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  background: var(--bg-2);
+  white-space: nowrap;
+}
+table.params td.field, table.params td.type {
+  font-family: var(--mono);
+  font-size: 12px;
+  white-space: nowrap;
+}
+table.params td.field { color: var(--accent); }
+table.params td.type { color: var(--accent-2); }
+table.params td.required { text-align: center; font-size: 11px; font-weight: 600; }
+.req-yes { color: var(--red); }
+.req-cond { color: var(--amber); }
+.req-no { color: var(--text-dim); }
+table.params td.default { font-family: var(--mono); font-size: 11.5px; color: var(--text-muted); }
+table.params td.default code { color: var(--text-muted); }
+table.params td.notes { color: var(--text-muted); min-width: 200px; }
+table.params td.notes code {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 11.5px;
+  color: var(--accent);
+}
+table.params tr:last-child td { border-bottom: none; }
+table.params tr:hover td { background: rgba(255,255,255,0.02); }
+
+/* ===== Code blocks ===== */
+pre.code-block {
+  background: var(--code-bg);
+  border: 1px solid var(--code-border);
+  border-radius: 6px;
+  padding: 12px 14px;
+  overflow-x: auto;
+  margin: 0;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
+pre.code-block::-webkit-scrollbar { height: 6px; }
+pre.code-block::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
+pre.code-block code {
+  font-family: var(--mono);
+  font-size: 12.5px;
+  color: #d4d4d4;
+  white-space: pre;
+  line-height: 1.5;
+}
+.json-key { color: var(--accent); }
+.json-string { color: #9ae6a8; }
+.json-number { color: var(--amber); }
+.json-bool { color: #c084fc; }
+.json-null { color: var(--text-dim); }
+
+/* ===== Status codes ===== */
+.status-codes { display: flex; flex-wrap: wrap; gap: 6px; }
+.status-code {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: var(--bg-2);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.status-code.s2 { color: var(--green); border-color: rgba(34,197,94,0.3); }
+.status-code.s4 { color: var(--amber); border-color: rgba(251,191,36,0.3); }
+.status-code.s5 { color: var(--red); border-color: rgba(239,68,68,0.3); }
+
+/* ===== Action variants ===== */
+.action-variants { display: grid; gap: 10px; }
+.action-variant {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 11px 13px;
+}
+.action-variant-name {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--accent);
+  margin-bottom: 4px;
+  font-weight: 700;
+}
+.action-variant-desc {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+.action-variant-desc code {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 11.5px;
+  color: var(--accent);
+}
+.action-variant pre.code-block { margin-top: 8px; }
+.action-variant pre.code-block:first-of-type { margin-top: 0; }
+
+/* ===== Shape card ===== */
+.shape-card { margin-bottom: 14px; }
+.shape-header {
+  padding: 11px 18px;
+  background: var(--panel-2);
+  border-bottom: 1px solid var(--border);
+}
+.shape-header h3 {
+  margin: 0;
+  font-size: 15px;
+  font-family: var(--mono);
+  color: var(--accent);
+  font-weight: 700;
+}
+.shape-desc {
+  margin: 0 0 12px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+.shape-desc code {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 11.5px;
+  color: var(--accent);
+}
+
+.empty-result {
+  padding: 60px 20px;
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 14px;
+}
+.empty-result.hidden { display: none; }
+
+/* ===== Backdrop for mobile sidebar ===== */
+.backdrop {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 150;
+}
+.backdrop.show { display: block; }
+
+/* ===== Footer ===== */
+.footer {
+  margin-top: 60px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+  color: var(--text-dim);
+  font-size: 12px;
+}
+.footer code {
+  font-family: var(--mono);
+  color: var(--text-muted);
+  background: var(--bg-2);
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+/* ===== Mobile ===== */
+@media (max-width: 880px) {
+  .sidebar-toggle { display: inline-flex; align-items: center; justify-content: center; }
+  .layout { grid-template-columns: 1fr; }
+  .sidebar {
+    position: fixed;
+    top: 0; left: 0;
+    width: 286px;
+    height: 100vh;
+    z-index: 200;
+    transform: translateX(-100%);
+    transition: transform 0.22s ease;
+    padding-top: 64px;
+    border-right: 1px solid var(--border);
+  }
+  .sidebar.open { transform: translateX(0); }
+  .content { padding: 18px 16px 60px; }
+  .topbar-links a:not(:last-child) { display: none; }
+  .intro h1 { font-size: 24px; }
+  .endpoint-path { font-size: 13.5px; }
+  .auth-badge { margin-left: 0; width: 100%; text-align: center; }
+  .endpoint-header { gap: 8px; padding: 12px 14px; }
+  .endpoint-body, .shape-body { padding: 14px; }
+  .search-hint { display: none; }
+}
+
+@media (max-width: 480px) {
+  .topbar-inner { padding: 8px 12px; gap: 10px; }
+  .search-bar { padding: 0 12px 10px; }
+  .version { display: none; }
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle navigation">☰</button>
+    <div class="brand">
+      <span class="brand-name">airouter<span class="brand-dash">-</span>py</span>
+      <span class="version">v0.1.1</span>
+    </div>
+    <nav class="topbar-links">
+      <a href="https://pypi.org/project/airouter-py/" target="_blank" rel="noopener">PyPI ↗</a>
+      <a href="https://github.com/mrmhthegreat/airouter-py" target="_blank" rel="noopener">GitHub ↗</a>
+    </nav>
+  </div>
+  <div class="search-bar">
+    <input type="search" id="searchInput" placeholder="Search endpoints by path, method, or keyword…  (press /)" autocomplete="off" spellcheck="false">
+    <span class="search-hint" id="searchHint"></span>
+  </div>
+</header>
+
+<div class="backdrop" id="backdrop"></div>
+
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <nav id="sidebarNav"></nav>
+  </aside>
+  <main class="content">
+    <div class="intro">
+      <h1>HTTP API Reference</h1>
+      <p class="lead">
+        The HTTP API exposed by the <code>airouter</code> package — a router across free-tier
+        AI providers (Groq, Gemini, OpenRouter, Z.AI, SambaNova, Ollama, any OpenAI-compatible URL)
+        with automatic failover for text, TTS and STT. Server built with Starlette via
+        <code>airouter.server.new_handler(...)</code>.
+      </p>
+      <div class="intro-grid">
+        <div class="intro-card">
+          <div class="intro-label">Base URL</div>
+          <code>http://localhost:8080</code>
+        </div>
+        <div class="intro-card">
+          <div class="intro-label">Tenant auth</div>
+          <code>Authorization: Bearer air_&lt;48 hex&gt;</code>
+        </div>
+        <div class="intro-card">
+          <div class="intro-label">Admin auth</div>
+          <code>Authorization: Bearer $AIROUTER_ADMIN_TOKEN</code>
+        </div>
+        <div class="intro-card">
+          <div class="intro-label">OpenAI-compatible</div>
+          <code>Point any OpenAI SDK at /v1</code>
+        </div>
+      </div>
+    </div>
+
+    <div id="endpointsContainer"></div>
+
+    <div class="footer">
+      <p>Source of truth: <code>airouter/server.py</code>, <code>airouter/types.py</code>,
+      <code>airouter/router_status.py</code>, <code>airouter/preset.py</code>. If this document
+      and the code disagree, the code wins.</p>
+    </div>
+  </main>
+</div>
+
+<script>
+"use strict";
+
+/* ===== Sections ===== */
+const SECTIONS = [
+  { id: "public",  title: "Public",                description: "No authentication required." },
+  { id: "native",  title: "Native API",            description: "Richer responses: returns attempts, provider, latency_ms directly." },
+  { id: "openai",  title: "OpenAI-compatible",     description: "Point any OpenAI SDK / editor plugin at /v1 with an airouter key." },
+  { id: "admin",   title: "Admin",                 description: "Authorization: Bearer <admin_token> (the AIROUTER_ADMIN_TOKEN env var)." },
+  { id: "tenant",  title: "Tenant Self-Service",   description: "Authorization: Bearer air_... — manage your own providers, keys and usage." },
+];
+
+/* ===== Shared shapes ===== */
+const SHAPES = [
+  {
+    name: "Message",
+    desc: "Used in <code>messages</code> arrays on <code>/v1/generate</code> and <code>/v1/chat/completions</code>.",
+    rows: [
+      ["role", "string", "<code>system</code>, <code>user</code>, or <code>assistant</code>. <code>developer</code> is mapped to <code>system</code> on the OpenAI surface."],
+      ["content", "string", "Plain text. On <code>/v1/chat/completions</code> may also be an array of <code>{\"type\":\"text\",\"text\":\"...\"}</code> parts."],
+    ],
+  },
+  {
+    name: "Attempt",
+    desc: "One provider's failure when a request fails over. Surfaced in error responses and on successful responses that involved failover.",
+    rows: [
+      ["provider", "string", "Provider <code>name</code> (e.g. <code>\"groq\"</code>)."],
+      ["error", "string", "Truncated upstream error string."],
+      ["status", "int", "Upstream HTTP status code, when there was one. Omitted when <code>0</code>."],
+      ["kind", "string", "One of: <code>auth</code>, <code>rate_limit</code>, <code>daily_limit</code>, <code>billing</code>, <code>bad_request</code>, <code>timeout</code>, <code>transient</code>, <code>bad_response</code>. Omitted when empty."],
+    ],
+  },
+  {
+    name: "ProviderConfig",
+    desc: "One model on one provider. Every entry has its OWN limits. The <code>api_key</code> field is <strong>never</strong> included in responses — only in admin/tenant write bodies.",
+    rows: [
+      ["id", "int", "<code>0</code> on create, set by the store on update."],
+      ["name", "string", "Unique per tenant. Copied from <code>preset+model</code> when omitted."],
+      ["tenant_id", "string", "<code>\"\"</code> ⇒ shared by every tenant. Admin writes may set this; tenant self-service always pins the caller."],
+      ["preset", "string", "Fills <code>kind</code>, <code>base_url</code>, <code>api_key_env</code>, <code>reset_tz</code>, <code>json_mode</code>, <code>system_role</code> from the catalog."],
+      ["kind", "string", "<code>\"openai\"</code> or <code>\"ollama\"</code>."],
+      ["base_url", "string", "Upstream URL. Ollama defaults to <code>http://localhost:11434</code>."],
+      ["api_key_env", "string", "Env var the router reads the key from (preferred over <code>api_key</code>). Admin-only."],
+      ["api_key", "string", "Literal key stored in the DB. Never returned. Admin or tenant self-service write only."],
+      ["model", "string", "Exact model id copied from the upstream console."],
+      ["priority", "int", "Lower = tried first. Default <code>100</code>."],
+      ["rpm", "int", "Requests per minute local cap (<code>0</code> = none)."],
+      ["rpd", "int", "Requests per day local cap."],
+      ["tpm", "int", "Tokens per minute local cap."],
+      ["ash", "int", "Audio seconds per hour (TTS/STT only)."],
+      ["asd", "int", "Audio seconds per day (TTS/STT only)."],
+      ["workers", "int", "Max concurrent requests. Default <code>2</code>."],
+      ["reset_tz", "string", "IANA zone for the daily counter reset. Default <code>UTC</code>."],
+      ["json_mode", "bool?", "<code>null</code>/<code>true</code> = send <code>response_format: json_object</code>; <code>false</code> = skip (Gemma, etc.). Omitted when <code>null</code>."],
+      ["system_role", "bool?", "<code>null</code>/<code>true</code> = send <code>system</code> messages upstream; <code>false</code> = fold them into the first user message. Omitted when <code>null</code>."],
+      ["category", "string", "<code>\"text\"</code> / <code>\"tts\"</code> / <code>\"stt\"</code>. Default <code>text</code>."],
+      ["disabled", "bool", "When true the provider is skipped by the router."],
+    ],
+  },
+  {
+    name: "ProviderStatus",
+    desc: "Live view of one provider. Returned by <code>/v1/usage</code>, <code>/v1/me/usage</code>, <code>/v1/me/providers</code>, <code>GET /v1/providers</code>.",
+    rows: [
+      ["id", "int", "Provider id."],
+      ["name", "string", "Provider <code>name</code>."],
+      ["tenant_id", "string", "Only present when the provider is owned by a tenant."],
+      ["kind", "string", "<code>\"openai\"</code> or <code>\"ollama\"</code>."],
+      ["model", "string", "Upstream model id."],
+      ["category", "string", "<code>\"text\"</code> / <code>\"tts\"</code> / <code>\"stt\"</code>."],
+      ["priority", "int", "Sort order."],
+      ["state", "string", "<code>\"ok\"</code>, <code>\"disabled\"</code>, <code>\"cooling\"</code>, <code>\"dead\"</code>, ..."],
+      ["used_today", "int", "Requests sent today (tenant-scoped when called as a tenant; global for admin)."],
+      ["tokens_today", "int", "Tokens sent today."],
+      ["audio_seconds_today", "int", "Audio seconds sent today (TTS/STT)."],
+      ["rpd, rpm, tpm, ash, asd", "int", "The limits configured locally."],
+      ["requests_last_minute", "int", "Sliding 60s counter."],
+      ["reset_tz", "string", "IANA zone."],
+      ["resets_in_seconds", "int", "Seconds until the day boundary in <code>reset_tz</code>."],
+      ["has_key", "bool", "Whether the upstream key is resolvable."],
+      ["limits_source", "string", "<code>\"config\"</code> (static) or <code>\"reported\"</code> (learned from upstream headers)."],
+      ["key_source", "string", "<code>\"env\"</code>, <code>\"db\"</code>, <code>\"not needed\"</code> (Ollama), or <code>\"none\"</code>."],
+      ["key_hint", "string", "Last 4 chars of the key (only when ≥ 8 chars long)."],
+    ],
+  },
+  {
+    name: "UsageReport",
+    desc: "Returned nested under <code>usage</code> by <code>/v1/usage</code> and <code>/v1/me/usage</code>.",
+    rows: [
+      ["tenant", "string", "Tenant id."],
+      ["requests_today", "int", "Requests this tenant has made today."],
+      ["tokens_today", "int", "Tokens this tenant has consumed today."],
+      ["tenant_daily_limit", "int", "<code>0</code> = unlimited."],
+      ["providers", "UsageRow[]", "Per-provider usage rows."],
+    ],
+  },
+  {
+    name: "Tenant",
+    desc: "Returned by <code>/v1/whoami</code>, <code>/v1/me</code>, <code>/v1/me/usage</code>, admin tenant endpoints.",
+    rows: [
+      ["id", "string", "Tenant id. <code>default</code> is the built-in."],
+      ["name", "string", "Display name."],
+      ["tz", "string", "IANA zone for the tenant's daily counter."],
+      ["daily_request_limit", "int", "<code>0</code> = unlimited."],
+      ["disabled", "bool", "When true, requests with this tenant's key return <code>403 forbidden</code>."],
+      ["created_at", "string", "RFC3339 UTC timestamp (<code>YYYY-MM-DDTHH:MM:SSZ</code>)."],
+    ],
+  },
+  {
+    name: "FreeModel",
+    desc: "Returned by <code>/v1/presets/free-pool</code> and <code>/v1/me/catalog</code>.",
+    rows: [
+      ["preset", "string", "Catalog key (e.g. <code>\"groq\"</code>, <code>\"gemini\"</code>)."],
+      ["model", "string", "Upstream model id."],
+      ["category", "string", "<code>\"text\"</code> / <code>\"tts\"</code> / <code>\"stt\"</code>."],
+      ["rpm, rpd, tpm", "int", "Catalog free-tier limits."],
+      ["ash, asd", "int", "Audio seconds per hour / day (TTS/STT)."],
+      ["priority", "int", "Suggested priority."],
+      ["workers", "int", "Suggested concurrency."],
+      ["notes", "string", "Human-readable note."],
+      ["verified_on", "string", "<code>YYYY-MM-DD</code> the catalog limits were checked."],
+    ],
+  },
+];
+
+/* ===== Endpoints =====
+ * Field shape:
+ *   s          — section id (public|native|openai|admin|tenant)
+ *   m          — HTTP method
+ *   p          — path (may include {param} segments)
+ *   a          — auth (public|tenant|admin)
+ *   summary    — short description
+ *   pathParams — [[name, type, notes], ...] | null
+ *   queryParams — [[name, type, required, default, notes], ...] | null
+ *   reqBody    — [[field, type, required, default, notes], ...] | null
+ *   reqBodyNote — content-type hint shown next to "Request Body"
+ *   respBody   — [[field, type, notes], ...] | null
+ *   respBodyNote — content-type hint shown next to "Response Body"
+ *   actions    — [{name, desc, reqBody, curl, resp}, ...] | null
+ *   curl       — example curl string
+ *   example    — example JSON response string
+ *   statuses   — ["200", "400", ...]
+ */
+const ENDPOINTS = [
+
+/* ============ PUBLIC ============ */
+{
+  s: "public", m: "GET", p: "/",
+  summary: "Returns the bundled web UI (<code>airouter/web/index.html</code>) so a browser pointed at the server can be used as a control panel.",
+  respBody: [
+    ["(body)", "text/html", "Bundled web UI; falls back to a minimal <code>&lt;html&gt;...&lt;h1&gt;airouter&lt;/h1&gt;&lt;p&gt;web UI not installed&lt;/p&gt;...&lt;/html&gt;</code> when the file is missing."],
+  ],
+  curl: "curl -s http://localhost:8080/ | head -c 200",
+  statuses: ["200"],
+},
+{
+  s: "public", m: "GET", p: "/healthz",
+  summary: "Liveness probe for orchestrators / load balancers.",
+  respBody: [
+    ["status", "string", "Always <code>\"ok\"</code>."],
+  ],
+  curl: "curl -s http://localhost:8080/healthz",
+  example: `{
+  "status": "ok"
+}`,
+  statuses: ["200"],
+},
+{
+  s: "public", m: "GET", p: "/v1/presets",
+  summary: "Returns the static provider-connection catalog (<code>airouter.preset.DEFINITIONS</code>) — the data that fills in <code>kind</code>, <code>base_url</code>, <code>api_key_env</code>, <code>reset_tz</code>, <code>json_mode</code>, <code>system_role</code> when you save a provider with a <code>preset</code> field.",
+  respBody: [
+    ["(object)", "object", "Keyed by preset name (e.g. <code>\"groq\"</code>)."],
+    ["*.kind", "string", "<code>\"openai\"</code> or <code>\"ollama\"</code>."],
+    ["*.base_url", "string", "Upstream URL."],
+    ["*.api_key_env", "string", "Env var name the key should be read from."],
+    ["*.reset_tz", "string", "IANA zone."],
+    ["*.json_mode", "bool?", "Omitted when <code>null</code>."],
+    ["*.system_role", "bool?", "Omitted when <code>null</code>."],
+    ["*.category", "string", "Default category for this preset's models."],
+  ],
+  curl: "curl -s http://localhost:8080/v1/presets | jq '.groq'",
+  example: `{
+  "groq": {
+    "kind": "openai",
+    "base_url": "https://api.groq.com/openai/v1",
+    "api_key_env": "GROQ_API_KEY",
+    "reset_tz": "UTC",
+    "category": "text"
+  },
+  "ollama": {
+    "kind": "ollama",
+    "base_url": "http://localhost:11434",
+    "api_key_env": "OLLAMA_API_KEY",
+    "reset_tz": "UTC",
+    "category": "text"
+  }
+}`,
+  statuses: ["200"],
+},
+{
+  s: "public", m: "GET", p: "/v1/presets/free-pool",
+  summary: "Returns the curated catalog of known-free (provider, model, limits) entries (<code>airouter.preset.FREE_POOL</code>), filtered by category.",
+  queryParams: [
+    ["category", "string", "no", "all", "Comma-separated list of <code>text</code>, <code>tts</code>, <code>stt</code>. Empty or <code>all</code> ⇒ all categories."],
+  ],
+  respBody: [
+    ["models", "FreeModel[]", "See <code>FreeModel</code> shape."],
+    ["verified_on", "string", "Newest <code>verified_on</code> across the catalog (<code>YYYY-MM-DD</code>)."],
+    ["summary", "object", "<code>{ \"text\": N, \"tts\": N, \"stt\": N }</code> — counts per category."],
+    ["categories", "string[]", "<code>[\"text\",\"tts\",\"stt\"]</code>."],
+  ],
+  curl: "curl -s 'http://localhost:8080/v1/presets/free-pool?category=text' | jq '.models[0]'",
+  example: `{
+  "models": [
+    {
+      "preset": "groq",
+      "model": "openai/gpt-oss-120b",
+      "category": "text",
+      "rpm": 30,
+      "rpd": 1000,
+      "tpm": 8000,
+      "ash": 0,
+      "asd": 0,
+      "priority": 10,
+      "workers": 3,
+      "notes": "OpenAI's 120B open-weight flagship. Best Groq free model for general reasoning.",
+      "verified_on": "2026-11-17"
+    }
+  ],
+  "verified_on": "2026-11-17",
+  "summary": { "text": 12, "tts": 4, "stt": 3 },
+  "categories": ["text", "tts", "stt"]
+}`,
+  statuses: ["200"],
+},
+
+/* ============ NATIVE ============ */
+{
+  s: "native", m: "POST", p: "/v1/generate",
+  summary: "Generate text (or validated JSON) from one or more providers. Richer than the OpenAI surface: returns <code>attempts</code>, <code>provider</code>, <code>latency_ms</code> directly.",
+  queryParams: [
+    ["format", "string", "no", "\"\"", "<code>text</code> ⇒ return <code>text/plain</code> instead of JSON. Or negotiated via <code>Accept</code> header."],
+  ],
+  reqBody: [
+    ["system", "string", "no", "\"\"", "Prepended as a <code>system</code> message (ignored when <code>messages</code> is non-empty)."],
+    ["prompt", "string", "no", "\"\"", "User prompt (ignored when <code>messages</code> is non-empty)."],
+    ["messages", "Message[]", "no", "[]", "Takes precedence over <code>system</code>/<code>prompt</code> when present."],
+    ["json", "bool", "no", "false", "Ask for (and validate) a JSON answer. Sets <code>response_format: json_object</code> upstream."],
+    ["max_tokens", "int", "no", "0", "<code>0</code> = provider default."],
+    ["temperature", "float?", "no", "null", "Sampling temperature, <code>0.0</code>–<code>2.0</code>."],
+    ["provider", "string", "no", "\"\"", "Pin one provider by <code>name</code>. Empty ⇒ router picks."],
+    ["strategy", "string", "no", "\"\"", "<code>\"priority\"</code> (default) or <code>\"spread\"</code>."],
+    ["category", "string", "no", "\"\"", "Internal: filter providers by category. Defaults to <code>text</code>."],
+  ],
+  respBody: [
+    ["text", "string", "Generated text (or pretty-printed JSON when <code>json=true</code>)."],
+    ["json", "any", "Decoded JSON value, only present when <code>json=true</code> was requested."],
+    ["provider", "string", "Provider <code>name</code> that produced the answer."],
+    ["model", "string", "Upstream model id that produced the answer."],
+    ["tokens", "int", "Tokens consumed (when known)."],
+    ["latency_ms", "int", "Wall-clock latency of the winning call."],
+    ["attempts", "Attempt[]", "Only present when the request failed over."],
+  ],
+  curl: `curl -s http://localhost:8080/v1/generate \\
+  -H "Authorization: Bearer air_abc..." \\
+  -H "Content-Type: application/json" \\
+  -d '{"prompt":"say hi in 5 words","max_tokens":64}'`,
+  example: `{
+  "text": "Hi there, how are you?",
+  "provider": "groq",
+  "model": "openai/gpt-oss-120b",
+  "tokens": 12,
+  "latency_ms": 187
+}`,
+  statuses: ["200", "400", "401", "403", "429", "502", "503", "504"],
+},
+{
+  s: "native", m: "POST", p: "/v1/speak",
+  summary: "Text → audio. Returns raw audio bytes by default, or a JSON envelope containing a base64-encoded payload when <code>format=json</code> (or <code>Accept: application/json</code>).",
+  queryParams: [
+    ["format", "string", "no", "\"\"", "<code>json</code> ⇒ return JSON envelope instead of raw bytes."],
+  ],
+  reqBody: [
+    ["text", "string", "yes", "\"\"", "The text to speak."],
+    ["voice", "string", "no", "\"\"", "Voice id; provider-specific."],
+    ["format", "string", "no", "\"\"", "<code>wav</code> (default), <code>mp3</code>, or <code>pcm</code>."],
+    ["language", "string", "no", "\"\"", "BCP-47 language hint."],
+    ["provider", "string", "no", "\"\"", "Pin one provider by <code>name</code>."],
+  ],
+  respBodyNote: "default: raw audio bytes; JSON envelope shown below",
+  respBody: [
+    ["content_type", "string", "MIME type of the audio bytes."],
+    ["format", "string", "<code>wav</code> / <code>mp3</code> / <code>pcm</code>."],
+    ["provider", "string", "Provider <code>name</code>."],
+    ["model", "string", "Upstream model id."],
+    ["voice", "string", "Only present when non-empty."],
+    ["latency_ms", "int", "Wall-clock latency."],
+    ["attempts", "Attempt[]", "Only present when the request failed over."],
+    ["audio_base64", "string", "Base64-encoded audio payload (always present in JSON envelope)."],
+  ],
+  curl: `# Save WAV bytes to file:
+curl -s http://localhost:8080/v1/speak \\
+  -H "Authorization: Bearer air_abc..." \\
+  -H "Content-Type: application/json" \\
+  -d '{"text":"Hello world","voice":"alloy","format":"wav"}' \\
+  -o hello.wav
+
+# JSON envelope:
+curl -s 'http://localhost:8080/v1/speak?format=json' \\
+  -H "Authorization: Bearer air_abc..." \\
+  -H "Content-Type: application/json" \\
+  -d '{"text":"Hello world"}'`,
+  example: `{
+  "content_type": "audio/wav",
+  "format": "wav",
+  "provider": "gemini",
+  "model": "gemini-2.5-flash-preview-tts",
+  "voice": "Charon",
+  "latency_ms": 412,
+  "audio_base64": "UklGRiQAAABXQVZFZm10..."
+}`,
+  statuses: ["200", "400", "401", "403", "429", "502", "503", "504"],
+},
+{
+  s: "native", m: "POST", p: "/v1/transcribe",
+  summary: "Audio → text. Multipart form in, JSON (or plain text) out.",
+  queryParams: [
+    ["format", "string", "no", "\"\"", "<code>text</code> ⇒ return <code>text/plain</code> instead of JSON."],
+  ],
+  reqBodyNote: "multipart/form-data",
+  reqBody: [
+    ["file", "file", "yes", "—", "The audio file (any OpenAI-supported format: <code>wav</code>, <code>mp3</code>, <code>flac</code>, <code>ogg</code>, ...)."],
+    ["language", "string", "no", "\"\"", "BCP-47 language hint."],
+    ["prompt", "string", "no", "\"\"", "Optional transcription prompt / glossary."],
+    ["provider", "string", "no", "\"\"", "Pin one provider by <code>name</code>."],
+  ],
+  respBody: [
+    ["text", "string", "Transcribed text."],
+    ["provider", "string", "Provider <code>name</code>."],
+    ["model", "string", "Upstream model id."],
+    ["language", "string", "Only present when non-empty."],
+    ["latency_ms", "int", "Wall-clock latency."],
+    ["attempts", "Attempt[]", "Only present when the request failed over."],
+  ],
+  curl: `curl -s http://localhost:8080/v1/transcribe \\
+  -H "Authorization: Bearer air_abc..." \\
+  -F "file=@talk.wav" \\
+  -F "language=en"`,
+  example: `{
+  "text": "Hello, this is a test recording.",
+  "provider": "groq",
+  "model": "whisper-large-v3",
+  "language": "en",
+  "latency_ms": 980
+}`,
+  statuses: ["200", "400", "401", "403", "429", "502", "503", "504"],
+},
+{
+  s: "native", m: "GET", p: "/v1/usage",
+  summary: "Returns the caller's usage report plus the live status of every provider visible to them (their own + shared). Admin may pass <code>X-Tenant-ID</code> / <code>?tenant=</code> to inspect a different tenant.",
+  queryParams: [
+    ["day", "string", "no", "today", "<code>YYYY-MM-DD</code> (in the tenant's <code>tz</code>) to inspect."],
+  ],
+  respBody: [
+    ["usage", "UsageReport", "See <code>UsageReport</code> shape."],
+    ["providers", "ProviderStatus[]", "Live status, see <code>ProviderStatus</code>."],
+    ["server_time", "string", "RFC3339 UTC timestamp."],
+  ],
+  curl: `curl -s http://localhost:8080/v1/usage \\
+  -H "Authorization: Bearer air_abc..."`,
+  example: `{
+  "usage": {
+    "tenant": "default",
+    "requests_today": 42,
+    "tokens_today": 18320,
+    "tenant_daily_limit": 0,
+    "providers": [
+      {
+        "provider": "groq",
+        "model": "openai/gpt-oss-120b",
+        "day": "2026-11-17",
+        "tenant_requests": 41,
+        "tenant_tokens": 18000,
+        "tenant_errors": 0,
+        "all_tenants_requests": 41,
+        "limit_per_day": 1000,
+        "resets_in_seconds": 31204
+      }
+    ]
+  },
+  "providers": [
+    {
+      "id": 1, "name": "groq", "kind": "openai",
+      "model": "openai/gpt-oss-120b", "category": "text",
+      "priority": 10, "state": "ok", "used_today": 41,
+      "rpd": 1000, "rpm": 30, "tpm": 8000,
+      "requests_last_minute": 2, "has_key": true,
+      "key_source": "env", "limits_source": "config",
+      "resets_in_seconds": 31204, "reset_tz": "UTC"
+    }
+  ],
+  "server_time": "2026-11-17T14:22:01Z"
+}`,
+  statuses: ["200", "401", "403"],
+},
+{
+  s: "native", m: "GET", p: "/v1/whoami",
+  summary: "Identifies the caller: their role (<code>tenant</code> or <code>admin</code>) and the resolved <code>Tenant</code> object.",
+  respBody: [
+    ["role", "string", "<code>\"tenant\"</code> or <code>\"admin\"</code>."],
+    ["tenant", "Tenant", "See <code>Tenant</code> shape."],
+  ],
+  curl: `curl -s http://localhost:8080/v1/whoami \\
+  -H "Authorization: Bearer air_abc..."`,
+  example: `{
+  "role": "tenant",
+  "tenant": {
+    "id": "demo",
+    "name": "Demo Tenant",
+    "tz": "UTC",
+    "daily_request_limit": 1000,
+    "disabled": false,
+    "created_at": "2026-11-15T09:30:00Z"
+  }
+}`,
+  statuses: ["200", "401", "403"],
+},
+
+/* ============ OPENAI-COMPATIBLE ============ */
+{
+  s: "openai", m: "POST", p: "/v1/chat/completions",
+  summary: "OpenAI-compatible chat completions. <strong>Streaming is buffered</strong>: airouter needs the whole answer to fail over safely, so SSE chunks are sent after the request completes.",
+  reqBody: [
+    ["model", "string", "yes", "—", "<code>\"auto\"</code> (or empty) lets the router pick. Otherwise a model id or provider name from <code>GET /v1/models</code>."],
+    ["messages", "Message[]", "yes", "—", "See <code>Message</code>. Content may be a string or array of <code>{\"type\":\"text\",\"text\":\"...\"}</code>. <code>role: developer</code> ⇒ <code>system</code>. Other roles rejected with <code>400</code>."],
+    ["temperature", "float?", "no", "null", "Sampling temperature."],
+    ["max_tokens", "int", "no", "0", "Falls back to <code>max_completion_tokens</code> if absent. <code>0</code> = upstream default."],
+    ["response_format", "object", "no", "—", "<code>{\"type\":\"json_object\"}</code> or <code>{\"type\":\"json_schema\"}</code> ⇒ asks for validated JSON."],
+    ["stream", "bool", "no", "false", "If true, returns SSE chunks (buffered — see above)."],
+    ["tools / functions", "any", "no", "—", "<strong>Rejected with <code>400</code></strong> — tool / function calling is not supported yet."],
+  ],
+  respBody: [
+    ["id", "string", "<code>chatcmpl-air-&lt;24 hex chars&gt;</code>."],
+    ["object", "string", "<code>\"chat.completion\"</code>."],
+    ["created", "int", "Unix timestamp."],
+    ["model", "string", "Upstream model id that produced the answer."],
+    ["choices", "array", "One element: <code>{\"index\":0,\"finish_reason\":\"stop\",\"message\":{\"role\":\"assistant\",\"content\":\"...\"}}</code>"],
+    ["usage", "object", "<code>{\"prompt_tokens\":0,\"completion_tokens\":0,\"total_tokens\":&lt;resp.tokens&gt;}</code>"],
+    ["airouter", "object", "<code>{\"provider\":\"...\",\"latency_ms\":N,\"attempts\":[...]}</code> — airouter-specific."],
+  ],
+  curl: `curl -s http://localhost:8080/v1/chat/completions \\
+  -H "Authorization: Bearer air_abc..." \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "model": "auto",
+    "messages": [
+      {"role":"system","content":"You are a concise assistant."},
+      {"role":"user","content":"Say hi in 5 words."}
+    ]
+  }'`,
+  example: `{
+  "id": "chatcmpl-air-7f3c1b9e4a5d2c8a6f0b1e3d",
+  "object": "chat.completion",
+  "created": 1763490121,
+  "model": "openai/gpt-oss-120b",
+  "choices": [
+    {
+      "index": 0,
+      "finish_reason": "stop",
+      "message": { "role": "assistant", "content": "Hi there, how are you?" }
+    }
+  ],
+  "usage": { "prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 12 },
+  "airouter": { "provider": "groq", "latency_ms": 187, "attempts": [] }
+}`,
+  statuses: ["200", "400", "401", "403", "404", "429", "502", "503", "504"],
+},
+{
+  s: "openai", m: "GET", p: "/v1/models",
+  summary: "Lists the chat-capable models visible to the caller (their own + shared, category=<code>text</code> only). Always includes a synthetic <code>\"auto\"</code> entry.",
+  respBody: [
+    ["object", "string", "<code>\"list\"</code>."],
+    ["data", "array", "Each element: <code>{\"id\",\"object\":\"model\",\"created\",\"owned_by\"}</code>."],
+  ],
+  curl: `curl -s http://localhost:8080/v1/models \\
+  -H "Authorization: Bearer air_abc..."`,
+  example: `{
+  "object": "list",
+  "data": [
+    { "id": "auto", "object": "model", "created": 1763490121, "owned_by": "airouter" },
+    { "id": "openai/gpt-oss-120b", "object": "model", "created": 1763490121, "owned_by": "groq" },
+    { "id": "gemini-3.5-flash-lite", "object": "model", "created": 1763490121, "owned_by": "gemini" }
+  ]
+}`,
+  statuses: ["200", "401", "403"],
+},
+{
+  s: "openai", m: "POST", p: "/v1/audio/speech",
+  summary: "OpenAI-compatible text-to-speech. Returns raw audio bytes with the upstream <code>Content-Type</code>.",
+  reqBody: [
+    ["model", "string", "yes", "—", "A TTS model id or provider <code>name</code> (resolved against the caller's TTS providers)."],
+    ["input", "string", "yes", "\"\"", "The text to speak."],
+    ["voice", "string", "no", "\"\"", "Voice id; provider-specific."],
+    ["response_format", "string", "no", "\"\"", "<code>wav</code>, <code>mp3</code>, or <code>pcm</code>."],
+  ],
+  respBodyNote: "raw audio bytes; upstream Content-Type (audio/wav, audio/mpeg, audio/pcm)",
+  respBody: [
+    ["(body)", "bytes", "Raw audio bytes. Includes <code>X-AIRouter-Provider</code> and <code>X-AIRouter-Model</code> response headers."],
+  ],
+  curl: `curl -s http://localhost:8080/v1/audio/speech \\
+  -H "Authorization: Bearer air_abc..." \\
+  -H "Content-Type: application/json" \\
+  -d '{"model":"auto","input":"Hello world","voice":"alloy"}' \\
+  -o speech.wav`,
+  statuses: ["200", "400", "401", "403", "404", "429", "502", "503", "504"],
+},
+{
+  s: "openai", m: "POST", p: "/v1/audio/transcriptions",
+  summary: "OpenAI-compatible audio transcription. Internally identical to <code>POST /v1/transcribe</code> — same handler, same multipart form, same JSON response. Mounted on the OpenAI-style path so the OpenAI Python SDK's <code>client.audio.transcriptions.create(...)</code> works out of the box.",
+  reqBodyNote: "multipart/form-data — same as POST /v1/transcribe",
+  reqBody: [
+    ["file", "file", "yes", "—", "The audio file (any OpenAI-supported format)."],
+    ["language", "string", "no", "\"\"", "BCP-47 language hint."],
+    ["prompt", "string", "no", "\"\"", "Optional transcription prompt / glossary."],
+    ["provider", "string", "no", "\"\"", "Pin one provider by <code>name</code>."],
+  ],
+  respBody: [
+    ["text", "string", "Transcribed text."],
+    ["provider", "string", "Provider <code>name</code>."],
+    ["model", "string", "Upstream model id."],
+    ["language", "string", "Only present when non-empty."],
+    ["latency_ms", "int", "Wall-clock latency."],
+    ["attempts", "Attempt[]", "Only present when the request failed over."],
+  ],
+  curl: `curl -s http://localhost:8080/v1/audio/transcriptions \\
+  -H "Authorization: Bearer air_abc..." \\
+  -F "file=@talk.wav" \\
+  -F "language=en"`,
+  example: `{
+  "text": "Hello, this is a test recording.",
+  "provider": "groq",
+  "model": "whisper-large-v3",
+  "language": "en",
+  "latency_ms": 980
+}`,
+  statuses: ["200", "400", "401", "403", "429", "502", "503", "504"],
+},
+
+/* ============ ADMIN ============ */
+{
+  s: "admin", m: "GET", p: "/v1/providers",
+  summary: "Lists the live status of every provider across every tenant.",
+  respBody: [
+    ["(array)", "ProviderStatus[]", "Live status, computed via <code>_status(router, \"\")</code> (empty tenant ⇒ all providers)."],
+  ],
+  curl: `curl -s http://localhost:8080/v1/providers \\
+  -H "Authorization: Bearer $AIROUTER_ADMIN_TOKEN" | jq '.[0]'`,
+  example: `[
+  {
+    "id": 1,
+    "name": "groq",
+    "workers": 3,
+    "kind": "openai",
+    "model": "openai/gpt-oss-120b",
+    "category": "text",
+    "priority": 10,
+    "state": "ok",
+    "used_today": 41,
+    "tokens_today": 18000,
+    "audio_seconds_today": 0,
+    "rpd": 1000, "rpm": 30, "tpm": 8000, "ash": 0, "asd": 0,
+    "requests_last_minute": 2,
+    "reset_tz": "UTC",
+    "resets_in_seconds": 31204,
+    "has_key": true,
+    "limits_source": "config",
+    "key_source": "env"
+  }
+]`,
+  statuses: ["200", "401", "403"],
+},
+{
+  s: "admin", m: "POST", p: "/v1/providers",
+  summary: "Creates or updates a provider config. The same endpoint serves both — when the body's <code>id</code> is non-zero the existing config is replaced.",
+  reqBodyNote: "application/json — ProviderConfig",
+  reqBody: [
+    ["id", "int", "no", "0", "<code>0</code> on create, set by the store on update."],
+    ["name", "string", "yes", "\"\"", "Unique per tenant. Copied from <code>preset+model</code> when omitted."],
+    ["tenant_id", "string", "no", "\"\"", "<code>\"\"</code> ⇒ shared by every tenant."],
+    ["preset", "string", "no", "\"\"", "Fills <code>kind</code>, <code>base_url</code>, <code>api_key_env</code>, <code>reset_tz</code>, <code>json_mode</code>, <code>system_role</code> from the catalog."],
+    ["kind", "string", "yes*", "\"\"", "<code>\"openai\"</code> or <code>\"ollama\"</code>. *Required unless filled via <code>preset</code>."],
+    ["base_url", "string", "yes*", "\"\"", "Upstream URL. *Required unless filled via <code>preset</code>."],
+    ["api_key_env", "string", "no", "\"\"", "Env var the router reads the key from (preferred over <code>api_key</code>)."],
+    ["api_key", "string", "no", "\"\"", "Literal key stored in the DB. Never returned."],
+    ["model", "string", "yes", "\"\"", "Exact model id copied from the upstream console."],
+    ["priority", "int", "no", "100", "Lower = tried first."],
+    ["rpm / rpd / tpm", "int", "no", "0", "Local rate / token caps (<code>0</code> = none)."],
+    ["ash / asd", "int", "no", "0", "Audio seconds per hour / day (TTS/STT only)."],
+    ["workers", "int", "no", "2", "Max concurrent requests."],
+    ["reset_tz", "string", "no", "\"UTC\"", "IANA zone for daily counter reset."],
+    ["json_mode", "bool?", "no", "null", "<code>null</code>/<code>true</code> = send JSON mode; <code>false</code> = skip."],
+    ["system_role", "bool?", "no", "null", "<code>null</code>/<code>true</code> = send system messages; <code>false</code> = fold."],
+    ["category", "string", "no", "\"text\"", "<code>\"text\"</code> / <code>\"tts\"</code> / <code>\"stt\"</code>."],
+    ["disabled", "bool", "no", "false", "When true the router skips this provider."],
+  ],
+  respBody: [
+    ["(body)", "ProviderConfig", "The stored <code>ProviderConfig</code> (without <code>api_key</code>). <code>api_key_env</code> present only when set."],
+  ],
+  curl: `curl -s -X POST http://localhost:8080/v1/providers \\
+  -H "Authorization: Bearer $AIROUTER_ADMIN_TOKEN" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "preset": "groq",
+    "name": "groq",
+    "model": "openai/gpt-oss-120b",
+    "api_key_env": "GROQ_API_KEY",
+    "priority": 10,
+    "rpm": 30,
+    "rpd": 1000,
+    "tpm": 8000,
+    "workers": 3
+  }'`,
+  example: `{
+  "id": 1,
+  "name": "groq",
+  "kind": "openai",
+  "base_url": "https://api.groq.com/openai/v1",
+  "model": "openai/gpt-oss-120b",
+  "priority": 10,
+  "rpm": 30, "rpd": 1000, "tpm": 8000, "ash": 0, "asd": 0,
+  "workers": 3, "reset_tz": "UTC",
+  "category": "text", "disabled": false,
+  "api_key_env": "GROQ_API_KEY"
+}`,
+  statuses: ["201", "400", "401", "403"],
+},
+{
+  s: "admin", m: "DELETE", p: "/v1/providers/{id}",
+  summary: "Removes a provider config.",
+  pathParams: [
+    ["id", "int", "Numeric provider id."],
+  ],
+  respBody: [
+    ["deleted", "bool", "Always <code>true</code> on success."],
+  ],
+  curl: `curl -s -X DELETE http://localhost:8080/v1/providers/3 \\
+  -H "Authorization: Bearer $AIROUTER_ADMIN_TOKEN"`,
+  example: `{
+  "deleted": true
+}`,
+  statuses: ["200", "400", "401", "403", "404"],
+},
+{
+  s: "admin", m: "POST", p: "/v1/providers/{id}/{action}",
+  summary: "Performs an action on a single provider. The <code>{action}</code> path segment selects the operation.",
+  pathParams: [
+    ["id", "int", "Numeric provider id."],
+    ["action", "string", "One of: <code>enable</code>, <code>disable</code>, <code>reset</code>, <code>key</code>."],
+  ],
+  actions: [
+    {
+      name: "enable",
+      desc: "Body: none. Clears <code>disabled</code> and lifts any pause.",
+      curl: `curl -s -X POST http://localhost:8080/v1/providers/2/enable \\
+  -H "Authorization: Bearer $AIROUTER_ADMIN_TOKEN"`,
+      resp: `{ "id": 2, "disabled": false }`,
+    },
+    {
+      name: "disable",
+      desc: "Body: none. Sets <code>disabled=true</code> so the router skips this provider.",
+      curl: `curl -s -X POST http://localhost:8080/v1/providers/2/disable \\
+  -H "Authorization: Bearer $AIROUTER_ADMIN_TOKEN"`,
+      resp: `{ "id": 2, "disabled": true }`,
+    },
+    {
+      name: "reset",
+      desc: "Body: none. Lifts any daily-limit / bad-key pause (<code>dead_until</code>, <code>cool_until</code>, <code>bad400</code> counter).",
+      curl: `curl -s -X POST http://localhost:8080/v1/providers/2/reset \\
+  -H "Authorization: Bearer $AIROUTER_ADMIN_TOKEN"`,
+      resp: `{ "id": 2, "paused": false }`,
+    },
+    {
+      name: "key",
+      desc: "Replaces the stored API key (literal, in the DB).",
+      reqBody: [
+        ["api_key", "string", "yes", "New upstream API key."],
+      ],
+      curl: `curl -s -X POST http://localhost:8080/v1/providers/2/key \\
+  -H "Authorization: Bearer $AIROUTER_ADMIN_TOKEN" \\
+  -H "Content-Type: application/json" \\
+  -d '{"api_key":"gsk_newkey..."}'`,
+      resp: `{ "id": 2, "key_stored": true }`,
+    },
+  ],
+  statuses: ["200", "400", "401", "403", "404"],
+},
+{
+  s: "admin", m: "POST", p: "/v1/bootstrap",
+  summary: "Bulk-import providers from the curated free-pool catalog. By default imports only <code>text</code>-category models whose env var is set.",
+  queryParams: [
+    ["overwrite", "string", "no", "false", "<code>1</code> / <code>true</code> ⇒ overwrite existing providers with the same name."],
+    ["preset", "string", "no", "\"\"", "Only import entries matching this preset name. Empty ⇒ all presets."],
+    ["category", "string", "no", "text", "Comma-separated <code>text</code>/<code>tts</code>/<code>stt</code> list, or <code>all</code>. Empty (the default) ⇒ <code>text</code> only. <code>all</code> ⇒ every category."],
+    ["store_keys", "string", "no", "false", "<code>1</code> / <code>true</code> ⇒ store the catalog's API keys in the DB (defaults to env-var lookup)."],
+  ],
+  respBody: [
+    ["added", "string[]", "Names of providers added."],
+    ["skipped", "string[]", "Names skipped (with reasons), typically <code>&lt;preset&gt;: env var X not set</code>."],
+    ["verified", "string", "Newest <code>verified_on</code> date in the catalog."],
+    ["categories_used", "string", "Human-readable label of which categories were used (e.g. <code>text (default)</code> or <code>all</code>)."],
+    ["available_categories", "string[]", "<code>[\"text\",\"tts\",\"stt\"]</code>."],
+    ["summary", "object", "<code>{ \"text\": N, \"tts\": N, \"stt\": N }</code> — counts per category in the catalog."],
+    ["next_step", "string", "Hint about setting env vars for skipped entries."],
+  ],
+  curl: `curl -s -X POST 'http://localhost:8080/v1/bootstrap?category=text' \\
+  -H "Authorization: Bearer $AIROUTER_ADMIN_TOKEN"`,
+  example: `{
+  "added": ["groq", "gemini"],
+  "skipped": ["sambanova: env var SAMBANOVA_API_KEY not set"],
+  "verified": "2026-11-17",
+  "categories_used": "text (default)",
+  "available_categories": ["text", "tts", "stt"],
+  "summary": { "text": 12, "tts": 4, "stt": 3 },
+  "next_step": "set the env vars named in skipped[] to import those providers too"
+}`,
+  statuses: ["200", "401", "403", "500"],
+},
+{
+  s: "admin", m: "GET", p: "/v1/tenants",
+  summary: "Lists every tenant in the store.",
+  respBody: [
+    ["(array)", "Tenant[]", "Array of <code>Tenant</code> objects."],
+  ],
+  curl: `curl -s http://localhost:8080/v1/tenants \\
+  -H "Authorization: Bearer $AIROUTER_ADMIN_TOKEN"`,
+  example: `[
+  {
+    "id": "default",
+    "name": "Default Tenant",
+    "tz": "UTC",
+    "daily_request_limit": 0,
+    "disabled": false,
+    "created_at": "2026-11-10T08:00:00Z"
+  },
+  {
+    "id": "demo",
+    "name": "Demo Tenant",
+    "tz": "America/Los_Angeles",
+    "daily_request_limit": 1000,
+    "disabled": false,
+    "created_at": "2026-11-15T09:30:00Z"
+  }
+]`,
+  statuses: ["200", "401", "403"],
+},
+{
+  s: "admin", m: "POST", p: "/v1/tenants",
+  summary: "Creates a new tenant. The generated API key is <strong>returned exactly once</strong> — store it immediately.",
+  reqBody: [
+    ["id", "string", "yes", "\"\"", "Tenant id; cannot collide with an existing one."],
+    ["name", "string", "no", "\"\"", "Display name."],
+    ["tz", "string", "no", "\"UTC\"", "IANA zone for the tenant's daily counter."],
+    ["daily_request_limit", "int", "no", "0", "<code>0</code> = unlimited."],
+    ["disabled", "bool", "no", "false", "Create the tenant already disabled."],
+  ],
+  respBody: [
+    ["tenant", "Tenant", "The stored tenant object."],
+    ["api_key", "string", "The new <code>air_&lt;48 hex chars&gt;</code> key — shown <strong>only this once</strong>."],
+    ["note", "string", "<code>\"store this key now — it is not shown again\"</code>."],
+  ],
+  curl: `curl -s -X POST http://localhost:8080/v1/tenants \\
+  -H "Authorization: Bearer $AIROUTER_ADMIN_TOKEN" \\
+  -H "Content-Type: application/json" \\
+  -d '{"id":"acme","name":"Acme Inc.","tz":"America/New_York","daily_request_limit":5000}'`,
+  example: `{
+  "tenant": {
+    "id": "acme",
+    "name": "Acme Inc.",
+    "tz": "America/New_York",
+    "daily_request_limit": 5000,
+    "disabled": false,
+    "created_at": "2026-11-17T14:22:01Z"
+  },
+  "api_key": "air_3f9c2b1e4a5d8c7f0a2b4e6d8c0a2b4e6f8a0c2e",
+  "note": "store this key now — it is not shown again"
+}`,
+  statuses: ["201", "400", "401", "403"],
+},
+{
+  s: "admin", m: "POST", p: "/v1/tenants/{id}/rotate-key",
+  summary: "Generates a new API key for a tenant. The old key stops working immediately. The new key is <strong>returned exactly once</strong>.",
+  pathParams: [
+    ["id", "string", "Tenant id."],
+  ],
+  respBody: [
+    ["tenant", "string", "Tenant id."],
+    ["api_key", "string", "The new <code>air_&lt;48 hex chars&gt;</code> key — shown <strong>only this once</strong>."],
+    ["note", "string", "<code>\"the old key no longer works; store this one now — it is not shown again\"</code>."],
+  ],
+  curl: `curl -s -X POST http://localhost:8080/v1/tenants/acme/rotate-key \\
+  -H "Authorization: Bearer $AIROUTER_ADMIN_TOKEN"`,
+  example: `{
+  "tenant": "acme",
+  "api_key": "air_8b4e2c0a6d4f8e2c0a4b6e8d0f2a4c6e8b0a2d4f",
+  "note": "the old key no longer works; store this one now — it is not shown again"
+}`,
+  statuses: ["200", "401", "403", "404"],
+},
+
+/* ============ TENANT SELF-SERVICE ============ */
+{
+  s: "tenant", m: "GET", p: "/v1/me",
+  summary: "Returns the caller's role and <code>Tenant</code> object.",
+  respBody: [
+    ["role", "string", "Always <code>\"tenant\"</code>."],
+    ["tenant", "Tenant", "See <code>Tenant</code> shape."],
+  ],
+  curl: `curl -s http://localhost:8080/v1/me \\
+  -H "Authorization: Bearer air_abc..."`,
+  example: `{
+  "role": "tenant",
+  "tenant": {
+    "id": "demo",
+    "name": "Demo Tenant",
+    "tz": "UTC",
+    "daily_request_limit": 1000,
+    "disabled": false,
+    "created_at": "2026-11-15T09:30:00Z"
+  }
+}`,
+  statuses: ["200", "401", "403"],
+},
+{
+  s: "tenant", m: "PATCH", p: "/v1/me",
+  summary: "Updates the caller's display name and/or <code>tz</code>. Cannot change <code>id</code>, <code>daily_request_limit</code>, or <code>disabled</code>.",
+  reqBody: [
+    ["name", "string", "no", "existing", "New display name; empty ⇒ keep current."],
+    ["tz", "string", "no", "existing", "New IANA zone; empty ⇒ keep current. Unknown zone ⇒ <code>400</code>."],
+  ],
+  respBody: [
+    ["role", "string", "<code>\"tenant\"</code>."],
+    ["tenant", "Tenant", "The updated <code>Tenant</code> object."],
+  ],
+  curl: `curl -s -X PATCH http://localhost:8080/v1/me \\
+  -H "Authorization: Bearer air_abc..." \\
+  -H "Content-Type: application/json" \\
+  -d '{"name":"Acme Demo","tz":"Europe/Berlin"}'`,
+  example: `{
+  "role": "tenant",
+  "tenant": {
+    "id": "demo",
+    "name": "Acme Demo",
+    "tz": "Europe/Berlin",
+    "daily_request_limit": 1000,
+    "disabled": false,
+    "created_at": "2026-11-15T09:30:00Z"
+  }
+}`,
+  statuses: ["200", "400", "401", "403", "404"],
+},
+{
+  s: "tenant", m: "POST", p: "/v1/me/rotate-key",
+  summary: "Rotates the caller's own API key. The old key stops working immediately; the new one is returned <strong>once</strong>.",
+  respBody: [
+    ["tenant", "string", "Tenant id."],
+    ["api_key", "string", "The new <code>air_&lt;48 hex chars&gt;</code> key — shown <strong>only once</strong>."],
+    ["note", "string", "<code>\"the old key no longer works; store this one now, it is not shown again\"</code>."],
+  ],
+  curl: `curl -s -X POST http://localhost:8080/v1/me/rotate-key \\
+  -H "Authorization: Bearer air_abc..."`,
+  example: `{
+  "tenant": "demo",
+  "api_key": "air_5e2c0a4b6d8f0e2c4a6b8d0f2e4c6a8b0d2e4f6c",
+  "note": "the old key no longer works; store this one now, it is not shown again"
+}`,
+  statuses: ["200", "401", "403", "404"],
+},
+{
+  s: "tenant", m: "GET", p: "/v1/me/usage",
+  summary: "Returns the caller's usage report plus their own providers (with live status) and the shared providers (read-only summary).",
+  queryParams: [
+    ["day", "string", "no", "today", "<code>YYYY-MM-DD</code> (in the tenant's <code>tz</code>) to inspect."],
+  ],
+  respBody: [
+    ["tenant", "string", "Tenant id."],
+    ["usage", "UsageReport", "See <code>UsageReport</code>."],
+    ["own", "ProviderStatus[]", "The tenant's own providers with live status."],
+    ["shared", "array", "Read-only shared providers, each <code>{\"name\",\"model\",\"category\",\"state\"}</code>."],
+  ],
+  curl: `curl -s http://localhost:8080/v1/me/usage \\
+  -H "Authorization: Bearer air_abc..."`,
+  example: `{
+  "tenant": "demo",
+  "usage": {
+    "tenant": "demo",
+    "requests_today": 12,
+    "tokens_today": 5400,
+    "tenant_daily_limit": 1000,
+    "providers": [
+      {
+        "provider": "demo-groq",
+        "model": "openai/gpt-oss-120b",
+        "day": "2026-11-17",
+        "tenant_requests": 12,
+        "tenant_tokens": 5400,
+        "tenant_errors": 0,
+        "all_tenants_requests": 12,
+        "limit_per_day": 1000,
+        "resets_in_seconds": 31204
+      }
+    ]
+  },
+  "own": [
+    {
+      "id": 5, "name": "demo-groq", "tenant_id": "demo",
+      "workers": 3, "kind": "openai", "model": "openai/gpt-oss-120b",
+      "category": "text", "priority": 10, "state": "ok",
+      "used_today": 12, "tokens_today": 5400,
+      "rpd": 1000, "rpm": 30, "tpm": 8000, "ash": 0, "asd": 0,
+      "requests_last_minute": 1, "reset_tz": "UTC",
+      "resets_in_seconds": 31204, "has_key": true,
+      "limits_source": "config", "key_source": "db"
+    }
+  ],
+  "shared": [
+    { "name": "shared-gemini", "model": "gemini-3.5-flash-lite", "category": "text", "state": "ok" }
+  ]
+}`,
+  statuses: ["200", "401", "403"],
+},
+{
+  s: "tenant", m: "POST", p: "/v1/me/bootstrap",
+  summary: "Import free-pool entries into the caller's own provider set, using keys the caller supplies in the request body (env vars are <strong>not</strong> consulted — the caller's keys are stored in the DB instead).",
+  reqBody: [
+    ["keys", "object", "yes", "{}", "Map of env-var name → literal API key, e.g. <code>{\"GROQ_API_KEY\":\"gsk_...\"}</code>. Must be non-empty."],
+    ["overwrite", "bool", "no", "false", "Overwrite existing providers with the same name."],
+    ["preset", "string", "no", "\"\"", "Only import entries matching this preset. Empty ⇒ all presets."],
+  ],
+  respBody: [
+    ["tenant", "string", "Tenant id."],
+    ["added", "string[]", "Names of providers added."],
+    ["skipped", "string[]", "Names skipped (with reasons)."],
+  ],
+  curl: `curl -s -X POST http://localhost:8080/v1/me/bootstrap \\
+  -H "Authorization: Bearer air_abc..." \\
+  -H "Content-Type: application/json" \\
+  -d '{"keys":{"GROQ_API_KEY":"gsk_abc123","GEMINI_API_KEY":"AIza..."}}'`,
+  example: `{
+  "tenant": "demo",
+  "added": ["demo-groq", "demo-gemini"],
+  "skipped": ["demo-sambanova: env var SAMBANOVA_API_KEY not in keys"]
+}`,
+  statuses: ["200", "400", "401", "403"],
+},
+{
+  s: "tenant", m: "GET", p: "/v1/me/providers",
+  summary: "Lists the caller's own providers (with live status) and the shared providers (read-only summary).",
+  respBody: [
+    ["tenant", "string", "Tenant id."],
+    ["own", "ProviderStatus[]", "The tenant's own providers with live status."],
+    ["shared", "array", "Read-only shared providers, each <code>{\"name\",\"model\",\"category\",\"state\"}</code>."],
+  ],
+  curl: `curl -s http://localhost:8080/v1/me/providers \\
+  -H "Authorization: Bearer air_abc..."`,
+  example: `{
+  "tenant": "demo",
+  "own": [
+    {
+      "id": 5, "name": "demo-groq", "tenant_id": "demo",
+      "workers": 3, "kind": "openai", "model": "openai/gpt-oss-120b",
+      "category": "text", "priority": 10, "state": "ok",
+      "used_today": 12, "tokens_today": 5400,
+      "rpd": 1000, "rpm": 30, "tpm": 8000, "ash": 0, "asd": 0,
+      "requests_last_minute": 0, "reset_tz": "UTC",
+      "resets_in_seconds": 31204, "has_key": true,
+      "limits_source": "config", "key_source": "db"
+    }
+  ],
+  "shared": [
+    { "name": "shared-gemini", "model": "gemini-3.5-flash-lite", "category": "text", "state": "ok" }
+  ]
+}`,
+  statuses: ["200", "401", "403"],
+},
+{
+  s: "tenant", m: "POST", p: "/v1/me/providers",
+  summary: "Adds one model for the caller. The key is stored in the DB and never returned.",
+  reqBody: [
+    ["name", "string", "yes", "\"\"", "Unique per tenant."],
+    ["preset", "string", "no", "\"\"", "Fills <code>kind</code>/<code>base_url</code>/<code>api_key_env</code>/<code>reset_tz</code>/etc. from the catalog."],
+    ["kind", "string", "yes", "\"\"", "<code>\"openai\"</code> or <code>\"ollama\"</code>."],
+    ["base_url", "string", "yes", "\"\"", "Upstream URL (Ollama defaults to <code>http://localhost:11434</code>)."],
+    ["api_key", "string", "cond", "\"\"", "Required when <code>kind != \"ollama\"</code>. Stored in the DB; never returned."],
+    ["model", "string", "yes", "\"\"", "Exact upstream model id."],
+    ["priority", "int", "no", "100", "Lower = tried first."],
+    ["rpm", "int", "no", "0", "Local RPM cap."],
+    ["rpd", "int", "no", "0", "Local RPD cap."],
+    ["tpm", "int", "no", "0", "Local TPM cap."],
+    ["workers", "int", "no", "2", "Max concurrent requests."],
+    ["category", "string", "no", "\"text\"", "<code>\"text\"</code> / <code>\"tts\"</code> / <code>\"stt\"</code>."],
+  ],
+  respBody: [
+    ["(body)", "ProviderConfig", "The stored <code>ProviderConfig</code> (without <code>api_key</code>)."],
+  ],
+  curl: `curl -s -X POST http://localhost:8080/v1/me/providers \\
+  -H "Authorization: Bearer air_abc..." \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "preset":"groq",
+    "name":"demo-groq",
+    "model":"openai/gpt-oss-120b",
+    "api_key":"gsk_abc123",
+    "priority":10,
+    "rpm":30,
+    "rpd":1000,
+    "tpm":8000,
+    "workers":3
+  }'`,
+  example: `{
+  "id": 5,
+  "name": "demo-groq",
+  "tenant_id": "demo",
+  "preset": "groq",
+  "kind": "openai",
+  "base_url": "https://api.groq.com/openai/v1",
+  "model": "openai/gpt-oss-120b",
+  "priority": 10,
+  "rpm": 30, "rpd": 1000, "tpm": 8000, "ash": 0, "asd": 0,
+  "workers": 3, "reset_tz": "UTC",
+  "category": "text", "disabled": false
+}`,
+  statuses: ["201", "400", "401", "403"],
+},
+{
+  s: "tenant", m: "POST", p: "/v1/me/providers/{id}/{action}",
+  summary: "Performs an action on one of the caller's own providers. The <code>{action}</code> path segment selects the operation.",
+  pathParams: [
+    ["id", "int", "Numeric provider id (must belong to the caller)."],
+    ["action", "string", "One of: <code>enable</code>, <code>disable</code>, <code>reset</code>, <code>key</code>, <code>limits</code>."],
+  ],
+  actions: [
+    {
+      name: "enable / disable / reset",
+      desc: "Body: none. Toggles <code>disabled</code> or lifts the pause.",
+      curl: `curl -s -X POST http://localhost:8080/v1/me/providers/5/disable \\
+  -H "Authorization: Bearer air_abc..."`,
+      resp: `{ "id": 5, "ok": true }`,
+    },
+    {
+      name: "key",
+      desc: "Replaces the stored key.",
+      reqBody: [
+        ["api_key", "string", "yes", "New upstream API key."],
+      ],
+      curl: `curl -s -X POST http://localhost:8080/v1/me/providers/5/key \\
+  -H "Authorization: Bearer air_abc..." \\
+  -H "Content-Type: application/json" \\
+  -d '{"api_key":"gsk_newkey..."}'`,
+      resp: `{ "id": 5, "ok": true }`,
+    },
+    {
+      name: "limits",
+      desc: "Updates some of the caller's per-provider limits. All fields optional; only those present are updated. Maps to <code>airouter.router.TenantLimits</code>.",
+      reqBody: [
+        ["rpm", "int", "no", "New RPM cap. <code>null</code> = skip."],
+        ["rpd", "int", "no", "New RPD cap."],
+        ["tpm", "int", "no", "New TPM cap."],
+        ["workers", "int", "no", "New concurrency."],
+        ["priority", "int", "no", "New priority."],
+      ],
+      curl: `curl -s -X POST http://localhost:8080/v1/me/providers/5/limits \\
+  -H "Authorization: Bearer air_abc..." \\
+  -H "Content-Type: application/json" \\
+  -d '{"rpd":500,"workers":2}'`,
+      resp: `{ "id": 5, "ok": true }`,
+    },
+  ],
+  statuses: ["200", "400", "401", "403", "404"],
+},
+{
+  s: "tenant", m: "DELETE", p: "/v1/me/providers/{id}",
+  summary: "Removes one of the caller's own providers.",
+  pathParams: [
+    ["id", "int", "Numeric provider id (must be owned by the caller)."],
+  ],
+  respBody: [
+    ["deleted", "bool", "Always <code>true</code> on success."],
+  ],
+  curl: `curl -s -X DELETE http://localhost:8080/v1/me/providers/5 \\
+  -H "Authorization: Bearer air_abc..."`,
+  example: `{
+  "deleted": true
+}`,
+  statuses: ["200", "400", "401", "403", "404"],
+},
+{
+  s: "tenant", m: "GET", p: "/v1/me/catalog",
+  summary: "Returns the free-pool catalog annotated with which entries the caller has already added (the <code>added</code> boolean on each model), plus per-provider connection defaults.",
+  respBody: [
+    ["providers", "array", "Per-preset connection defaults, each <code>{\"preset\",\"kind\",\"key_env\",\"needs_key\"}</code>."],
+    ["models", "array", "Catalog entries (only non-Ollama), each is <code>FreeModel</code> plus <code>added: bool</code>."],
+    ["verified_on", "string", "Newest <code>verified_on</code> date in the catalog."],
+  ],
+  curl: `curl -s http://localhost:8080/v1/me/catalog \\
+  -H "Authorization: Bearer air_abc..."`,
+  example: `{
+  "providers": [
+    { "preset": "gemini", "kind": "openai", "key_env": "GEMINI_API_KEY", "needs_key": true },
+    { "preset": "groq", "kind": "openai", "key_env": "GROQ_API_KEY", "needs_key": true }
+  ],
+  "models": [
+    {
+      "preset": "groq", "model": "openai/gpt-oss-120b", "category": "text",
+      "rpm": 30, "rpd": 1000, "tpm": 8000,
+      "notes": "OpenAI's 120B open-weight flagship...",
+      "verified_on": "2026-11-17",
+      "added": true
+    },
+    {
+      "preset": "gemini", "model": "gemini-3.5-flash-lite", "category": "text",
+      "rpm": 15, "rpd": 500, "tpm": 250000,
+      "notes": "Best Gemini free chat model...",
+      "verified_on": "2026-11-17",
+      "added": false
+    }
+  ],
+  "verified_on": "2026-11-17"
+}`,
+  statuses: ["200", "401", "403"],
+},
+{
+  s: "tenant", m: "POST", p: "/v1/me/catalog/add",
+  summary: "Bulk-add entries from a single preset using one API key.",
+  reqBody: [
+    ["preset", "string", "yes", "\"\"", "Catalog preset name (e.g. <code>\"groq\"</code>)."],
+    ["api_key", "string", "no", "\"\"", "Literal key to store for this preset's providers. Required for non-Ollama presets."],
+    ["models", "string[]", "no", "[]", "Optional list of specific model ids to add (subset of the preset's catalog entries). Empty ⇒ all."],
+  ],
+  respBody: [
+    ["added", "string[]", "Names of providers added."],
+    ["skipped", "string[]", "Names skipped (with reasons)."],
+  ],
+  curl: `curl -s -X POST http://localhost:8080/v1/me/catalog/add \\
+  -H "Authorization: Bearer air_abc..." \\
+  -H "Content-Type: application/json" \\
+  -d '{"preset":"groq","api_key":"gsk_abc123"}'`,
+  example: `{
+  "added": ["demo-groq-openai/gpt-oss-120b", "demo-groq-openai/gpt-oss-20b"],
+  "skipped": []
+}`,
+  statuses: ["200", "400", "401", "403", "404"],
+},
+{
+  s: "tenant", m: "GET", p: "/v1/me/ollama",
+  summary: "Lists models installed on the operator-configured Ollama server (the <code>ollama_url</code> from <code>Router</code>, not tenant-supplied).",
+  respBody: [
+    ["available", "bool", "<code>true</code> when Ollama was reachable."],
+    ["models", "array", "Each <code>{\"name\", ...}</code> (fields from Ollama <code>/api/tags</code>). Empty when not reachable."],
+    ["error", "string", "Only present when <code>available=false</code>."],
+  ],
+  curl: `curl -s http://localhost:8080/v1/me/ollama \\
+  -H "Authorization: Bearer air_abc..."`,
+  example: `{
+  "available": true,
+  "models": [
+    { "name": "llama3.2:3b" },
+    { "name": "qwen2.5:7b" }
+  ]
+}`,
+  statuses: ["200"],
+},
+{
+  s: "tenant", m: "POST", p: "/v1/me/ollama/add",
+  summary: "Adds one or more installed Ollama models to the caller's own provider set. No key required.",
+  reqBody: [
+    ["models", "string[]", "yes", "[]", "Ollama model names, e.g. <code>[\"llama3.2:3b\"]</code>."],
+  ],
+  respBody: [
+    ["added", "string[]", "Names added (<code>ollama-&lt;model&gt;</code>)."],
+    ["skipped", "string[]", "Names skipped, each <code>\"&lt;model&gt;: &lt;error&gt;\"</code>."],
+  ],
+  curl: `curl -s -X POST http://localhost:8080/v1/me/ollama/add \\
+  -H "Authorization: Bearer air_abc..." \\
+  -H "Content-Type: application/json" \\
+  -d '{"models":["llama3.2:3b","qwen2.5:7b"]}'`,
+  example: `{
+  "added": ["ollama-llama3.2:3b", "ollama-qwen2.5:7b"],
+  "skipped": []
+}`,
+  statuses: ["200", "401", "403"],
+},
+{
+  s: "tenant", m: "POST", p: "/v1/me/import",
+  summary: "Bulk-imports an arbitrary list of provider configs into the caller's own set.",
+  reqBodyNote: "application/json — object with providers array, OR bare array",
+  reqBody: [
+    ["providers", "ProviderConfig[]", "yes", "Array of provider config objects (subset of <code>ProviderConfig</code>; see <code>POST /v1/me/providers</code> for fields)."],
+  ],
+  respBody: [
+    ["added", "string[]", "Names added."],
+    ["failed", "string[]", "Names that failed (with reasons)."],
+  ],
+  curl: `curl -s -X POST http://localhost:8080/v1/me/import \\
+  -H "Authorization: Bearer air_abc..." \\
+  -H "Content-Type: application/json" \\
+  -d '{"providers":[
+    {"preset":"groq","name":"demo-groq","model":"openai/gpt-oss-120b","api_key":"gsk_abc123","rpm":30,"rpd":1000,"workers":3},
+    {"preset":"gemini","name":"demo-gemini","model":"gemini-3.5-flash-lite","api_key":"AIza...","rpm":15,"rpd":500,"workers":2}
+  ]}'`,
+  example: `{
+  "added": ["demo-groq", "demo-gemini"],
+  "failed": []
+}`,
+  statuses: ["200", "400", "401", "403"],
+},
+{
+  s: "tenant", m: "GET", p: "/v1/me/export",
+  summary: "Exports the caller's own providers as a JSON file download (<code>id</code>, <code>tenant_id</code>, <code>api_key</code>, and <code>api_key_env</code> are stripped).",
+  respBodyNote: "application/json — Content-Disposition: attachment; filename=\"airouter-providers-<tenant>.json\"",
+  respBody: [
+    ["providers", "ProviderConfig[]", "The caller's own providers (keys stripped)."],
+  ],
+  curl: `curl -s -o airouter-providers-demo.json http://localhost:8080/v1/me/export \\
+  -H "Authorization: Bearer air_abc..."`,
+  example: `{
+  "providers": [
+    {
+      "name": "demo-groq",
+      "preset": "groq",
+      "kind": "openai",
+      "base_url": "https://api.groq.com/openai/v1",
+      "model": "openai/gpt-oss-120b",
+      "priority": 10,
+      "rpm": 30, "rpd": 1000, "tpm": 8000, "ash": 0, "asd": 0,
+      "workers": 3, "reset_tz": "UTC",
+      "category": "text", "disabled": false
+    }
+  ]
+}`,
+  statuses: ["200", "401", "403"],
+},
+
+]; /* end ENDPOINTS */
+
+/* ===== Helpers ===== */
+function slugify(method, path) {
+  if (path === "/" || path === "") return method.toLowerCase() + "-root";
+  return (method.toLowerCase() + "-" + path)
+    .replace(/[{}]/g, "")
+    .replace(/\//g, "-")
+    .replace(/[^a-z0-9-]+/g, "-")
+    .replace(/-{2,}/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function esc(s) {
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+function renderPath(path) {
+  return path.replace(/\{([^}]+)\}/g, '<span class="path-param">{$1}</span>');
+}
+
+function reqBadge(req) {
+  if (req === true || req === "yes") return '<span class="req-yes">yes</span>';
+  if (req === "cond" || req === "yes*") return '<span class="req-cond">' + req + "</span>";
+  return '<span class="req-no">no</span>';
+}
+
+function highlightJson(jsonStr) {
+  // Escape HTML first
+  let s = esc(jsonStr);
+  // Then apply token highlighting in order: keys, strings, numbers, booleans, null
+  s = s.replace(/("(?:\\.|[^"\\])*")(\s*:)/g, '<span class="json-key">$1</span>$2');
+  s = s.replace(/:\s*("(?:\\.|[^"\\])*")/g, ': <span class="json-string">$1</span>');
+  s = s.replace(/:\s*(-?\d+(?:\.\d+)?)/g, ': <span class="json-number">$1</span>');
+  s = s.replace(/:\s*(true|false)(?=[,\s}\n])/g, ': <span class="json-bool">$1</span>');
+  s = s.replace(/:\s*(null)(?=[,\s}\n])/g, ': <span class="json-null">$1</span>');
+  return s;
+}
+
+function renderTable(headers, rows, classes) {
+  if (!rows || rows.length === 0) return '<p style="color:var(--text-dim);font-size:13px;margin:0">—</p>';
+  const ths = headers.map(h => "<th>" + h + "</th>").join("");
+  const trs = rows.map(r => {
+    const tds = r.map((cell, i) => '<td class="' + (classes[i] || "") + '">' + cell + "</td>").join("");
+    return "<tr>" + tds + "</tr>";
+  }).join("");
+  return '<table class="params"><thead><tr>' + ths + "</tr></thead><tbody>" + trs + "</tbody></table>";
+}
+
+function sectionHtml(title, content) {
+  return '<div class="endpoint-section"><h4>' + title + "</h4>" + content + "</div>";
+}
+
+function statusClass(code) {
+  const c = String(code).charAt(0);
+  if (c === "2") return "s2";
+  if (c === "4") return "s4";
+  if (c === "5") return "s5";
+  return "";
+}
+
+function buildSearchIndex(ep) {
+  return [
+    ep.m,
+    ep.p,
+    ep.a,
+    ep.summary || "",
+    (ep.pathParams || []).map(r => r.join(" ")).join(" "),
+    (ep.queryParams || []).map(r => r.join(" ")).join(" "),
+    (ep.reqBody || []).map(r => r.join(" ")).join(" "),
+    (ep.respBody || []).map(r => r.join(" ")).join(" "),
+    (ep.actions || []).map(a => a.name + " " + (a.desc || "")).join(" "),
+  ].join(" ").toLowerCase();
+}
+
+/* ===== Renderers ===== */
+function renderEndpoint(ep) {
+  const slug = ep.slug;
+  let html = '<div class="endpoint-card" id="' + slug + '" data-search="' + esc(ep._search) + '">';
+  html += '<div class="endpoint-header">';
+  html += '<span class="method-badge ' + ep.m + '">' + ep.m + "</span>";
+  html += '<span class="endpoint-path">' + renderPath(ep.p) + "</span>";
+  html += '<span class="auth-badge ' + ep.a + '">' + ep.a + "</span>";
+  html += "</div>";
+  html += '<div class="endpoint-body">';
+
+  if (ep.summary) {
+    html += '<p class="endpoint-summary">' + ep.summary + "</p>";
+  }
+
+  if (ep.pathParams) {
+    html += sectionHtml("Path Parameters", renderTable(
+      ["Name", "Type", "Notes"],
+      ep.pathParams.map(r => [r[0], r[1], r[2]]),
+      ["field", "type", "notes"]
+    ));
+  }
+
+  if (ep.queryParams) {
+    html += sectionHtml("Query Parameters", renderTable(
+      ["Name", "Type", "Required", "Default", "Notes"],
+      ep.queryParams.map(r => [r[0], r[1], reqBadge(r[2]), "<code>" + r[3] + "</code>", r[4]]),
+      ["field", "type", "required", "default", "notes"]
+    ));
+  }
+
+  if (ep.reqBody) {
+    const hint = ep.reqBodyNote ? ' <span class="content-type-hint">' + ep.reqBodyNote + "</span>" : "";
+    html += sectionHtml("Request Body" + hint, renderTable(
+      ["Field", "Type", "Required", "Default", "Notes"],
+      ep.reqBody.map(r => [r[0], r[1], reqBadge(r[2]), "<code>" + r[3] + "</code>", r[4]]),
+      ["field", "type", "required", "default", "notes"]
+    ));
+  }
+
+  if (ep.actions) {
+    let aHtml = '<div class="action-variants">';
+    for (const a of ep.actions) {
+      aHtml += '<div class="action-variant">';
+      aHtml += '<div class="action-variant-name">' + a.name + "</div>";
+      if (a.desc) aHtml += '<div class="action-variant-desc">' + a.desc + "</div>";
+      if (a.reqBody) {
+        aHtml += renderTable(
+          ["Field", "Type", "Required", "Notes"],
+          a.reqBody.map(r => [r[0], r[1], reqBadge(r[2]), r[3]]),
+          ["field", "type", "required", "notes"]
+        );
+      }
+      if (a.curl) aHtml += '<pre class="code-block"><code>' + esc(a.curl) + "</code></pre>";
+      if (a.resp) aHtml += '<pre class="code-block"><code>' + highlightJson(a.resp) + "</code></pre>";
+      aHtml += "</div>";
+    }
+    aHtml += "</div>";
+    html += sectionHtml("Action Variants", aHtml);
+  }
+
+  if (ep.respBody) {
+    const hint = ep.respBodyNote ? ' <span class="content-type-hint">' + ep.respBodyNote + "</span>" : "";
+    html += sectionHtml("Response Body" + hint, renderTable(
+      ["Field", "Type", "Notes"],
+      ep.respBody.map(r => [r[0], r[1], r[2]]),
+      ["field", "type", "notes"]
+    ));
+  }
+
+  if (ep.curl) {
+    html += sectionHtml("Example Request", '<pre class="code-block"><code>' + esc(ep.curl) + "</code></pre>");
+  }
+
+  if (ep.example) {
+    html += sectionHtml("Example Response", '<pre class="code-block"><code>' + highlightJson(ep.example) + "</code></pre>");
+  }
+
+  if (ep.statuses && ep.statuses.length) {
+    const codes = ep.statuses.map(s => '<span class="status-code ' + statusClass(s) + '">' + esc(s) + "</span>").join("");
+    html += sectionHtml("Status Codes", '<div class="status-codes">' + codes + "</div>");
+  }
+
+  html += "</div></div>";
+  return html;
+}
+
+function renderShapes() {
+  let html = '<section class="section-anchor" id="section-shapes">';
+  html += '<div class="section-header"><h2>Shared Data Shapes</h2><p>Common JSON shapes referenced across multiple endpoints. Field names match the <code>to_dict()</code> methods on the dataclasses in <code>airouter/types.py</code> and <code>airouter/router_status.py</code>.</p></div>';
+  for (const shape of SHAPES) {
+    html += '<div class="shape-card" id="shape-' + shape.name.toLowerCase() + '">';
+    html += '<div class="shape-header"><h3>' + shape.name + "</h3></div>";
+    html += '<div class="shape-body">';
+    html += '<p class="shape-desc">' + shape.desc + "</p>";
+    html += renderTable(["Field", "Type", "Notes"], shape.rows, ["field", "type", "notes"]);
+    html += "</div></div>";
+  }
+  html += "</section>";
+  return html;
+}
+
+function renderSidebar() {
+  let html = "";
+  html += '<div class="nav-section">';
+  html += '<div class="nav-section-title">Reference</div>';
+  html += "<ul><li><a class=\"nav-link\" href=\"#section-shapes\" data-search=\"shared shapes message attempt providerconfig providerstatus usagereport tenant freemodel\"><span class=\"nav-method GET\" style=\"background:rgba(167,139,250,0.15);color:#a78bfa\">REF</span><span class=\"nav-path\">Shared Shapes</span></a></li></ul>";
+  html += "</div>";
+  for (const sec of SECTIONS) {
+    const eps = ENDPOINTS.filter(e => e.s === sec.id);
+    html += '<div class="nav-section" data-section="' + sec.id + '">';
+    html += '<div class="nav-section-title">' + sec.title + "</div>";
+    html += "<ul>";
+    for (const ep of eps) {
+      html += '<li><a class="nav-link" href="#' + ep.slug + '" data-search="' + esc(ep._search) + '">';
+      html += '<span class="nav-method ' + ep.m + '">' + ep.m + "</span>";
+      html += '<span class="nav-path">' + renderPath(ep.p) + "</span>";
+      html += "</a></li>";
+    }
+    html += "</ul></div>";
+  }
+  document.getElementById("sidebarNav").innerHTML = html;
+}
+
+function renderContent() {
+  let html = renderShapes();
+  for (const sec of SECTIONS) {
+    const eps = ENDPOINTS.filter(e => e.s === sec.id);
+    html += '<section class="section-anchor" id="section-' + sec.id + '">';
+    html += '<div class="section-header"><h2>' + sec.title + '</h2><p>' + sec.description + "</p></div>";
+    for (const ep of eps) {
+      html += renderEndpoint(ep);
+    }
+    html += "</section>";
+  }
+  document.getElementById("endpointsContainer").innerHTML = html;
+}
+
+/* ===== Search ===== */
+function filterEndpoints(query) {
+  const q = query.trim().toLowerCase();
+  const cards = document.querySelectorAll(".endpoint-card");
+  const navLinks = document.querySelectorAll(".nav-link");
+  const navSections = document.querySelectorAll(".nav-section");
+  const sections = document.querySelectorAll(".section-anchor");
+  const hint = document.getElementById("searchHint");
+  const shapesSection = document.getElementById("section-shapes");
+
+  if (!q) {
+    cards.forEach(c => { c.style.display = ""; });
+    navLinks.forEach(l => { l.style.display = ""; });
+    navSections.forEach(s => { s.style.display = ""; });
+    sections.forEach(s => { s.style.display = ""; });
+    hint.textContent = "";
+    return;
+  }
+
+  let visibleCount = 0;
+  cards.forEach(c => {
+    const match = c.dataset.search.indexOf(q) !== -1;
+    c.style.display = match ? "" : "none";
+    if (match) visibleCount++;
+  });
+
+  navLinks.forEach(l => {
+    const match = l.dataset.search.indexOf(q) !== -1;
+    l.style.display = match ? "" : "none";
+  });
+
+  navSections.forEach(s => {
+    const hasVisible = s.querySelectorAll('.nav-link:not([style*="display: none"])').length > 0;
+    s.style.display = hasVisible ? "" : "none";
+  });
+
+  sections.forEach(s => {
+    if (s.id === "section-shapes") {
+      // Hide shapes section during search unless query matches a shape name
+      s.style.display = "none";
+      return;
+    }
+    const hasVisible = s.querySelectorAll('.endpoint-card:not([style*="display: none"])').length > 0;
+    s.style.display = hasVisible ? "" : "none";
+  });
+
+  hint.textContent = visibleCount + " match" + (visibleCount === 1 ? "" : "es");
+}
+
+/* ===== Mobile sidebar ===== */
+function setupMobileSidebar() {
+  const toggle = document.getElementById("sidebarToggle");
+  const sidebar = document.getElementById("sidebar");
+  const backdrop = document.getElementById("backdrop");
+
+  function close() {
+    sidebar.classList.remove("open");
+    backdrop.classList.remove("show");
+  }
+  function open() {
+    sidebar.classList.add("open");
+    backdrop.classList.add("show");
+  }
+  function toggleOpen() {
+    if (sidebar.classList.contains("open")) close(); else open();
+  }
+
+  toggle.addEventListener("click", toggleOpen);
+  backdrop.addEventListener("click", close);
+  sidebar.addEventListener("click", function(e) {
+    if (e.target.closest(".nav-link")) {
+      // Allow the hash change to happen first, then close
+      setTimeout(close, 80);
+    }
+  });
+  window.addEventListener("keydown", function(e) {
+    if (e.key === "Escape" && sidebar.classList.contains("open")) close();
+  });
+}
+
+/* ===== Keyboard shortcut ===== */
+function setupSearchShortcut() {
+  const input = document.getElementById("searchInput");
+  window.addEventListener("keydown", function(e) {
+    // Focus on "/" if not already typing in an input
+    if (e.key === "/" && document.activeElement !== input) {
+      const tag = (document.activeElement && document.activeElement.tagName) || "";
+      if (tag !== "INPUT" && tag !== "TEXTAREA") {
+        e.preventDefault();
+        input.focus();
+        input.select();
+      }
+    }
+    // Clear on Escape when search focused
+    if (e.key === "Escape" && document.activeElement === input) {
+      input.value = "";
+      filterEndpoints("");
+      input.blur();
+    }
+  });
+}
+
+/* ===== Init ===== */
+function init() {
+  // Pre-compute slug + search index
+  for (const ep of ENDPOINTS) {
+    if (!ep.slug) ep.slug = slugify(ep.m, ep.p);
+    ep._search = buildSearchIndex(ep);
+  }
+  renderSidebar();
+  renderContent();
+  document.getElementById("searchInput").addEventListener("input", function(e) {
+    filterEndpoints(e.target.value);
+  });
+  setupMobileSidebar();
+  setupSearchShortcut();
+}
+
+document.addEventListener("DOMContentLoaded", init);
+</script>
+
+</body>
+</html>
